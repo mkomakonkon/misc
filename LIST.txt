@@ -1,0 +1,4362 @@
+12A0: 00                    NOP
+12A1: E1                    POP     HL
+12A2: 12                    LD      (DE),A
+12A3: C3 0B 13              JP      RM130B	'通常ルート
+12A6: C3 AB 12              JP      RM12AB	'カセットバックアップへ
+12A9: 7D                    LD      A,L
+12AA: 33                    INC     SP
+                      RM12AB:
+12AB: 3A 9B 33              LD      A,(RM339B)	バックアップフラグ確認
+12AE: FE FA                 CP      FAh			フラグがFAのみバックアップへ
+12B0: CA 9C 33              JP      Z,RM339C	BACK-UP TAPE作成
+12B3: 18 65                 JR      RM131A
+12B5: 43 4D 55 2D 4D        DEFM	'CMU-MZB ver2.04 Copyright'
+                                     ^^^^^^^^^^^^^^^^バックアップ時のファイル名
+12BA: 5A 42 20 76 65
+12BF: 72 32 2E 30 34
+12C4: 20 43 6F 70 79
+12C9: 72 69 67 68 74
+12CE: 20 31 39 38 32        DEFM	' 1982,1983 by AMDEK'
+12D3: 2C 31 39 38 33
+12D8: 20 62 79 20 41
+
+12E1: 31 7A 33              LD      SP,337Ah	SP設定
+12E4: 21 FF FF              LD      HL,FFFFh
+12E7: 11 7D 33              LD      DE,337Dh	データ先頭アドレス
+12EA: AF                    XOR     A			'A=0
+12EB: ED 52                 SBC     HL,DE
+12ED: CD DA 1E              CALL    RM1EDA		入力:HL[FREEエリア BYTE]、出力:BC[FREE STEPS]])
+12F0: ED 43 2F 32           LD      (RM322F),BC		FREE STEPS
+12F4: 21 7D 33              LD      HL,337Dh		データ先頭アドレス
+12F7: 09                    ADD     HL,BC
+12F8: 09                    ADD     HL,BC
+12F9: 09                    ADD     HL,BC
+12FA: 22 31 32              LD      (RM3231),HL		RM3231にTOTALメモリを格納
+12FD: CD 62 1B              CALL    RM1B62
+1300: 3E C3                 LD      A,C3h
+1302: 32 AE 00              LD      (RM00AE),A
+                      RM1305:
+1305: 21 0B 13              LD      HL,130Bh
+1308: 22 AF 00              LD      (RM00AF),HL
+                      RM130B:
+130B: 31 7A 33              LD      SP,337Ah
+130E: CD EE 0C              CALL    RM0CEE(1行を40文字にする)
+1311: CD E2 2B              CALL    RM2BE2(CMU-800本体初期設定)
+1314: CD 7E 1B              CALL    RM1B7E
+1317: CD DF 29              CALL    RM29DF
+                      RM131A:
+131A: CD 98 31              CALL    RM3198
+131D: CD E8 24              CALL    RM24E8		ヘッダー表示
+1320: 21 7C 13              LD      HL,137Ch	16h,01h,V2.04
+1323: CD 10 2F              CALL    RM2F10		CURSOR D,E:PRINT HL(00まで)
+                      RM1326:
+1326: 21 83 13              LD      HL,1383h	00h,03h,0-9 : editor以降のTXTデータ
+1329: CD 10 2F              CALL    RM2F10		CURSOR D,E:PRINT HL(00まで)
+132C: 3E FF                 LD      A,FFh
+                      RM132E:
+132E: A7                    AND     A
+132F: 28 E9                 JR      Z,RM131A		HOT START
+1331: CD 3F 31              CALL    RM313F		INPUT
+                      RM1334:
+1334: FE 45                 CP      45h			E:point edit
+1336: CA C8 1A              JP      Z,RM1AC8
+1339: FE 50                 CP      50h			P:play
+133B: CC E3 26              CALL    Z,RM26E3
+133E: FE 4F                 CP      4Fh			O:loop play
+1340: CC EA 26              CALL    Z,RM26EA
+1343: FE 54                 CP      54h			T:tune
+1345: CC 9B 27              CALL    Z,RM279B
+1348: FE 42                 CP      42h			B:change play bias
+134A: CC 66 2A              CALL    Z,RM2A66
+134D: FE 43                 CP      43h			change cv bias
+134F: CC 74 2A              CALL    Z,RM2A74
+1352: FE 4C                 CP      4Ch		L:load from cassette
+1354: CA 6F 2C              JP      Z,RM2C6F 	load from cassette
+1357: FE 53                 CP      53h		S:save to cassette
+1359: CA 36 2C              JP      Z,RM2C36
+135C: FE 56                 CP      56h		V:verify with cassette
+135E: CA 68 2C              JP      Z,RM2C68
+1361: FE 62                 CP      62h			b:BACKUPテープ作成
+1363: CA AB 12              JP      Z,RM12AB
+1366: FE 41                 CP      41h			A:all clear
+1368: CC 54 1B              CALL    Z,RM1B54
+136B: FE 0D                 CP      0Dh			ENT:1つ前のEDITモードへ
+136D: 28 0A                 JR      Z,RM1379
+136F: FE 30                 CP      30h			0-9:パターンEDIT
+1371: FA 2E 13              JP      M,RM132E
+1374: FE 3A                 CP      3Ah
+1376: F2 2E 13              JP      P,RM132E
+                      RM1379:
+1379: C3 4D 15              JP      RM154D
+137C: 16 01                 DEFB    16h,01h		CURSOR 01h,16h
+137E: 56 32 2E 30 34        DEFM	'V2.04'
+1383: 00 03                 DEFB    00h,03h		CURSOR 03h,00h
+1385: 30 2D 39 20 3A        DEFM	'0-9 : editor'
+138A: 20 65 64 69 74
+138F: 6F 72
+1391: 0D                    DEFB	0DH
+1392: 20 20 45 20 3A        DEFM	'  E : point edit'
+1397: 20 70 6F 69 6E
+139C: 74 20 65 64 69
+13A1: 74
+13A2: 0D                    DEFB	0DH
+13A3: 20 20 50 20 3A        DEFM	'  P : play'
+13A8: 20 70 6C 61 79
+13AD: 0D                    DEFB	0DH
+13AE: 20 20 4F 20 3A        DEFM	'  O : loop play'
+13B3: 20 6C 6F 6F 70
+13B8: 20 70 6C 61 79
+13BD: 0D                    DEFB	0DH
+13BE: 20 20 54 20 3A        DEFM	'  T : tune'
+13C3: 20 74 75 6E 65
+13C8: 0D                    DEFB	0DH
+13C9: 20 20 42 20 3A        DEFM	'  B : change play bias'
+13CE: 20 63 68 61 6E
+13D3: 67 65 20 70 6C
+13D8: 61 79 20 62 69
+13DD: 61 73
+13DF: 0D                    DEFB	0DH
+13E0: 20 20 43 20 3A        DEFM	'  C : change cv bias'
+13E5: 20 63 68 61 6E
+13EA: 67 65 20 63 76
+13EF: 20 62 69 61 73
+13F4: 0D                    DEFB	0DH
+13F5: 20 20 4C 20 3A        DEFM	'  L : load from cassette'
+13FA: 20 6C 6F 61 64
+13FF: 20 66 72 6F 6D
+1404: 20 63 61 73 73
+1409: 65 74 74 65
+140D: 0D                    DEFB	0DH
+140E: 20 20 53 20 3A        DEFM	'  S : save to cassette'
+1413: 20 73 61 76 65
+1418: 20 74 6F 20 63
+141D: 61 73 73 65 74
+1422: 74 65
+1424: 0D                    DEFB	0DH
+1425: 20 20 56 20 3A        DEFM	'  V : verify with cassette'
+142A: 20 76 65 72 69
+142F: 66 79 20 77 69
+1434: 74 68 20 63 61
+1439: 73 73 65 74 74
+143E: 65
+143F: 0D                    DEFB	0DH
+1440: 20 20 41 20 3A        DEFM	'  A : all clear'
+1445: 20 61 6C 6C 20
+144A: 63 6C 65 61 72
+144F: 0D                    DEFB	0DH
+1450: 0D                    DEFB	0DH
+1451: 3F 20                 DEFM	'? '
+1453: 00                    DEFB    00h
+1454: 06			        DEFM	'©’
+1455: 2A 20 3A 20 6D        DEFM	'* : measure end'
+145A: 65 61 73 75 72
+145F: 65 20 65 6E 64
+1464: 0D                    DEFB	0DH
+1465: 5B 20 3A 20 72        DEFM	'[ : repeat top'
+146A: 65 70 65 61 74
+146F: 20 74 6F 70
+1473: 0D                    DEFB	0DH
+1474: 5D 20 3A 20 72        DEFM	'] : repeat end'
+1479: 65 70 65 61 74
+147E: 20 65 6E 64
+1482: 0D                    DEFB	0DH
+1483: 2E 20 3A 20 63        DEFM	'. : copy last step'
+1488: 6F 70 79 20 6C
+148D: 61 73 74 20 73
+1492: 74 65 70
+1495: 0D                    DEFB	0DH
+1496: 49 20 3A 20 69        DEFM	'I : insert'
+149B: 6E 73 65 72 74
+14A0: 0D                    DEFB	0DH
+14A1: 46 20 3A 20 66        DEFM	'F : forward page'
+14A6: 6F 72 77 61 72
+14AB: 64 20 70 61 67
+14B0: 65
+14B1: 0D                    DEFB	0DH
+14B2: 42 20 3A 20 62        DEFM	'B : back page'
+14B7: 61 63 6B 20 70
+14BC: 61 67 65
+14BF: 0D                    DEFB	0DH
+14C0: 43 20 3A 20 63        DEFM	'C : copy'
+14C5: 6F 70 79
+14C8: 0D                    DEFB	0DH
+14C9: 54 20 3A 20 74        DEFM	'T : transpose'
+14CE: 72 61 6E 73 70
+14D3: 6F 73 65
+14D6: 0D                    DEFB	0DH
+14D7: 44 20 3A 20 64        DEFM	'D : delete'
+14DC: 65 6C 65 74 65
+14E1: 0D                    DEFB	0DH
+14E2: 3D 20 3A 20 73        DEFM	'= : sound edit'
+14E7: 6F 75 6E 64 20
+14EC: 65 64 69 74
+14F0: 0D                    DEFB	0DH
+14F1: 4D 20 3A 20 6D        DEFM	'M : measure play'
+14F6: 65 61 73 75 72
+14FB: 65 20 70 6C 61
+1500: 79
+1501: 0D                    DEFB	0DH
+1502: 50 20 3A 20 70        DEFM	'P : point play'
+1507: 6F 69 6E 74 20
+150C: 70 6C 61 79
+1510: 0D                    DEFB	0DH
+1511: 51 20 3A 20 71        DEFM	'Q : quit'
+1516: 75 69 74
+1519: 0D                    DEFB	0DH
+151A: 0D                    DEFB	0DH
+151B: 70 72 65 73 73        DEFM	'press any key then return'
+1520: 20 61 6E 79 20
+1525: 6B 65 79 20 74
+152A: 68 65 6E 20 72
+152F: 65 74 75 72 6E
+1534: 00                    DEFB	00h
+1535: 00 03                 DEFB    00h,03h		CURSOR 03h,00h
+1537: 50 52 45 53 53        DEFM	'PRESS "Q"  KEY TO STOP'
+153C: 20 22 51 22 20
+1541: 4B 45 59 20 54
+1546: 4F 20 53 54 4F
+154B: 50
+154C: 00                    NOP
+                      RM154D:
+154D: FE 0D                 CP      0Dh
+154F: 28 05                 JR      Z,RM1556
+1551: D6 30                 SUB     30h
+1553: 32 DB 32              LD      (RM32DB),A
+                      RM1556:
+1556: CD E8 24              CALL    RM24E8		ヘッダー表示
+1559: 18 11                 JR      RM156C
+                      RM155B:
+155B: 11 26 01              LD      DE,0126h
+155E: CD 8E 31              CALL    RM318E		CURSOR 38,1
+1561: CD A9 21              CALL    RM21A9
+1564: D2 1A 13              JP      NC,RM131A		HOT START
+1567: 16 03                 LD      D,03h
+1569: CD 5F 25              CALL    RM255F
+                      RM156C:
+156C: CD E5 21              CALL    RM21E5
+156F: D2 5B 15              JP      NC,RM155B
+1572: AF                    XOR     A			'A=0
+1573: 32 2C 32              LD      (RM322C),A
+1576: CD 71 23              CALL    RM2371
+1579: C3 95 15              JP      RM1595
+                      RM157C:
+157C: CD A2 31              CALL    RM31A2
+157F: CD 56 2F              CALL    RM2F56
+1582: C3 AC 31              JP      RM31AC
+                      RM1585:
+1585: CD 40 21              CALL    RM2140
+1588: CD 10 20              CALL    RM2010
+                      RM158B:
+158B: AF                    XOR     A			'A=0
+158C: 32 2C 32              LD      (RM322C),A
+158F: CD 22 25              CALL    RM2522
+1592: CD 7C 23              CALL    RM237C
+                      RM1595:
+1595: 3A DB 32              LD      A,(RM32DB)
+1598: A7                    AND     A
+1599: CA 1E 18              JP      Z,RM181E
+                      RM159C:
+159C: FE 09                 CP      09h
+                      RM159E:
+159E: C2 A6 15              JP      NZ,RM15A6
+                      RM15A1:
+15A1: 3E 00                 LD      A,00h
+15A3: 32 29 32              LD      (RM3229),A
+                      RM15A6:
+15A6: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+15A9: 7E                    LD      A,(HL)
+15AA: FE FE                 CP      FEh				FEh,0Ch,06h(CHの終わり)?
+15AC: D2 D0 16              JP      NC,RM16D0
+15AF: CD A4 1F              CALL    RM1FA4
+15B2: CD 86 1F              CALL    RM1F86
+15B5: CD BE 2F              CALL    RM2FBE
+15B8: FE 0D                 CP      0Dh
+15BA: CA A2 16              JP      Z,RM16A2
+15BD: FE 03                 CP      03h			'→'を押した場合
+15BF: CA 49 16              JP      Z,RM1649
+15C2: FE 04                 CP      04h			'←'を押した場合
+15C4: CA 31 16              JP      Z,RM1631
+15C7: FE 01                 CP      01h			'↓'を押した場合
+15C9: CA A8 16              JP      Z,RM16A8
+15CC: FE 02                 CP      02h			'↑'を押した場合
+15CE: CA B1 16              JP      Z,RM16B1
+15D1: FE 3D                 CP      3Dh			'='を押した場合
+15D3: CC E8 16              CALL    Z,RM16E8
+15D6: FE 20                 CP      20h			' 'を押した場合
+15D8: CA 49 16              JP      Z,RM1649
+15DB: FE 2E                 CP      2Eh			'.'を押した場合
+15DD: CA 6A 16              JP      Z,RM166A
+15E0: FE 49                 CP      49h			'I'を押した場合
+15E2: CA BA 16              JP      Z,RM16BA
+15E5: FE 46                 CP      46h			'F'を押した場合
+15E7: CA E0 1B              JP      Z,RM1BE0
+15EA: FE 42                 CP      42h			'B'を押した場合
+15EC: CA F7 1B              JP      Z,RM1BF7
+15EF: FE 44                 CP      44h			'D'を押した場合
+15F1: CA 1F 1C              JP      Z,RM1C1F
+15F4: FE 43                 CP      43h			'C'を押した場合
+15F6: CA F2 1C              JP      Z,RM1CF2
+15F9: FE 54                 CP      54h			'T'を押した場合
+15FB: CA 90 1C              JP      Z,RM1C90
+15FE: FE 4D                 CP      4Dh			'M'を押した場合
+1600: CC 24 16              CALL    Z,RM1624
+1603: FE 50                 CP      50h			'P'を押した場合
+1605: CC 29 16              CALL    Z,RM1629
+1608: FE 51                 CP      51h			'Q'を押した場合
+160A: CA 6C 15              JP      Z,RM156C
+160D: FE 3F                 CP      3Fh			'?'を押した場合
+160F: CA 15 16              JP      Z,RM1615
+1612: C3 95 15              JP      RM1595
+                      RM1615:'?'を押した時のHELP表示
+1615: 21 54 14              LD      HL,1454h	'* : measure end'～
+1618: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+161B: CD 3F 31              CALL    RM313F		INPUT
+161E: CD 71 23              CALL    RM2371
+1621: C3 95 15              JP      RM1595
+                      RM1624:
+1624: CD 0B 28              CALL    RM280B
+1627: AF                    XOR     A			'A=0
+1628: C9                    RET
+                      RM1629:point play
+1629: CD 34 27              CALL    RM2734
+162C: CD 22 25              CALL    RM2522
+162F: AF                    XOR     A			'A=0
+1630: C9                    RET
+                      RM1631:
+1631: CD 27 30              CALL    RM3027
+1634: 3A 29 32              LD      A,(RM3229)
+1637: FE 00                 CP      00h
+1639: 28 07                 JR      Z,RM1642
+163B: 3D                    DEC     A
+                      RM163C:
+163C: 32 29 32              LD      (RM3229),A
+163F: C3 95 15              JP      RM1595
+                      RM1642:
+1642: CD 10 20              CALL    RM2010
+1645: 3E 02                 LD      A,02h
+1647: 18 F3                 JR      RM163C
+                      RM1649:
+1649: 3A DB 32              LD      A,(RM32DB)
+164C: FE 09                 CP      09h
+164E: CA A2 16              JP      Z,RM16A2
+1651: CD 27 30              CALL    RM3027
+1654: 3A 29 32              LD      A,(RM3229)
+1657: FE 02                 CP      02h
+1659: 28 07                 JR      Z,RM1662
+165B: 3C                    INC     A
+165C: 32 29 32              LD      (RM3229),A
+165F: C3 95 15              JP      RM1595
+                      RM1662:
+1662: 3E 00                 LD      A,00h
+1664: 32 29 32              LD      (RM3229),A
+1667: C3 AB 16              JP      RM16AB
+                      RM166A:
+166A: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+166D: 7E                    LD      A,(HL)
+166E: FE FB                 CP      FBh				FBh,0Ah,06h(]リピート終了)?
+1670: D2 95 15              JP      NC,RM1595
+                      RM1673:
+1673: 2B                    DEC     HL
+1674: 2B                    DEC     HL
+1675: 2B                    DEC     HL
+1676: 7E                    LD      A,(HL)
+1677: FE FE                 CP      FEh
+1679: CA 95 15              JP      Z,RM1595
+167C: FE FB                 CP      FBh
+167E: 30 F3                 JR      NC,RM1673
+1680: 47                    LD      B,A
+1681: 23                    INC     HL
+1682: 4E                    LD      C,(HL)
+1683: 23                    INC     HL
+1684: 56                    LD      D,(HL)
+1685: DD 2A E0 32           LD      IX,(RM32E0)		データの現在アドレス
+1689: 3A 29 32              LD      A,(RM3229)
+168C: FE 02                 CP      02h
+168E: 28 0A                 JR      Z,RM169A
+1690: FE 01                 CP      01h
+1692: 28 03                 JR      Z,RM1697
+1694: DD 70 00              LD      (IX+00h),B
+                      RM1697:
+1697: DD 71 01              LD      (IX+01h),C
+                      RM169A:
+169A: DD 72 02              LD      (IX+02h),D
+169D: CD A4 1F              CALL    RM1FA4
+16A0: 18 09                 JR      RM16AB
+                      RM16A2:
+16A2: CD 27 30              CALL    RM3027
+16A5: CD DA 27              CALL    RM27DA
+                      RM16A8:
+16A8: CD 27 30              CALL    RM3027
+                      RM16AB:
+16AB: CD EB 1F              CALL    RM1FEB
+16AE: C3 95 15              JP      RM1595
+                      RM16B1:
+16B1: CD 27 30              CALL    RM3027
+                      RM16B4:
+16B4: CD 10 20              CALL    RM2010
+16B7: C3 95 15              JP      RM1595
+                      RM16BA:
+16BA: 2A 33 32              LD      HL,(RM3233)		フリーステップ格納アドレス
+16BD: 7C                    LD      A,H
+16BE: B5                    OR      L
+16BF: 20 06                 JR      NZ,RM16C7
+16C1: CD FF 1E              CALL    RM1EFF			メモリフル
+16C4: C3 95 15              JP      RM1595
+                      RM16C7:
+16C7: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+16CA: 57                    LD      D,A
+16CB: CD 5F 25              CALL    RM255F
+16CE: 18 24                 JR      RM16F4
+                      RM16D0:
+16D0: 2A 33 32              LD      HL,(RM3233)		フリーステップ格納アドレス
+16D3: 7C                    LD      A,H
+16D4: B5                    OR      L
+16D5: 20 1D                 JR      NZ,RM16F4
+16D7: CD FF 1E              CALL    RM1EFF			メモリフル
+16DA: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+16DD: 2B                    DEC     HL
+16DE: 2B                    DEC     HL
+16DF: 2B                    DEC     HL
+16E0: 7E                    LD      A,(HL)
+16E1: FE FE                 CP      FEh				3バイト前は前のCHの終わりか？
+16E3: D2 6C 15              JP      NC,RM156C
+16E6: 18 CC                 JR      RM16B4
+                      RM16E8:
+16E8: 3A 2D 32              LD      A,(RM322D)
+16EB: 2F                    CPL				Aの値を反転
+16EC: 32 2D 32              LD      (RM322D),A
+16EF: CD 22 25              CALL    RM2522
+16F2: AF                    XOR     A			'A=0
+16F3: C9                    RET
+                      RM16F4:
+16F4: CD 16 21              CALL    RM2116
+16F7: CD B0 1F              CALL    RM1FB0
+16FA: 3E FF                 LD      A,FFh
+16FC: 32 2C 32              LD      (RM322C),A
+16FF: CD 22 25              CALL    RM2522
+1702: 3E 00                 LD      A,00h
+1704: 32 29 32              LD      (RM3229),A
+                      RM1707:
+1707: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+170A: 57                    LD      D,A
+170B: DD 2A DC 32           LD      IX,(RM32DC)
+170F: FD 2A DE 32           LD      IY,(RM32DE)
+1713: CD 96 23              CALL    RM2396
+                      RM1716:
+1716: CD 86 1F              CALL    RM1F86
+1719: CD BE 2F              CALL    RM2FBE
+171C: FE 0D                 CP      0Dh
+171E: CA E0 17              JP      Z,RM17E0
+1721: FE 03                 CP      03h
+1723: CA B0 17              JP      Z,RM17B0
+1726: FE 04                 CP      04h
+1728: CA 96 17              JP      Z,RM1796
+172B: FE 01                 CP      01h
+172D: CA E0 17              JP      Z,RM17E0
+1730: FE 02                 CP      02h
+1732: CA 85 15              JP      Z,RM1585
+1735: FE 20                 CP      20h
+1737: CA B0 17              JP      Z,RM17B0
+173A: FE 42                 CP      42h
+173C: CA 12 18              JP      Z,RM1812
+173F: FE 3D                 CP      3Dh
+1741: CC E8 16              CALL    Z,RM16E8
+1744: FE 2E                 CP      2Eh
+1746: CA E0 17              JP      Z,RM17E0
+1749: FE 2A                 CP      2Ah
+174B: CA 65 1A              JP      Z,RM1A65
+174E: FE 5B                 CP      5Bh			'['(REPEAT)か？
+1750: CA 80 1A              JP      Z,RM1A80
+1753: FE 5D                 CP      5Dh
+1755: CA 90 1A              JP      Z,RM1A90
+1758: FE 43                 CP      43h
+175A: CA E7 1C              JP      Z,RM1CE7
+175D: FE 4D                 CP      4Dh
+175F: CC D2 17              CALL    Z,RM17D2
+1762: FE 51                 CP      51h
+1764: CA 72 17              JP      Z,RM1772
+1767: FE 3F                 CP      3Fh
+1769: CA 84 17              JP      Z,RM1784
+176C: CD A4 1F              CALL    RM1FA4
+176F: C3 16 17              JP      RM1716
+                      RM1772:
+1772: CD 40 21              CALL    RM2140
+1775: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+1778: 7E                    LD      A,(HL)
+1779: FE FE                 CP      FEh				FEh,0Ch,06h(CHの終わり)？
+177B: DA 8B 15              JP      C,RM158B
+177E: CD 7C 23              CALL    RM237C
+1781: C3 6C 15              JP      RM156C
+                      RM1784:
+1784: CD 40 21              CALL    RM2140
+1787: 21 54 14              LD      HL,1454h	'* : measure end'
+178A: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+178D: CD 3F 31              CALL    RM313F		INPUT
+1790: CD 71 23              CALL    RM2371
+1793: C3 BA 16              JP      RM16BA
+                      RM1796:
+1796: CD 27 30              CALL    RM3027
+1799: 3A 29 32              LD      A,(RM3229)
+179C: FE 00                 CP      00h
+179E: CA A8 17              JP      Z,RM17A8
+17A1: 3D                    DEC     A
+17A2: 32 29 32              LD      (RM3229),A
+17A5: C3 16 17              JP      RM1716
+                      RM17A8:
+17A8: 3E 02                 LD      A,02h
+17AA: 32 29 32              LD      (RM3229),A
+17AD: C3 85 15              JP      RM1585
+                      RM17B0:
+17B0: 3A DB 32              LD      A,(RM32DB)
+17B3: FE 09                 CP      09h
+17B5: CA E0 17              JP      Z,RM17E0
+17B8: CD 27 30              CALL    RM3027
+17BB: 3A 29 32              LD      A,(RM3229)
+17BE: FE 02                 CP      02h
+17C0: CA CA 17              JP      Z,RM17CA
+17C3: 3C                    INC     A
+17C4: 32 29 32              LD      (RM3229),A
+17C7: C3 16 17              JP      RM1716
+                      RM17CA:
+17CA: 3E 00                 LD      A,00h
+17CC: 32 29 32              LD      (RM3229),A
+17CF: C3 E6 17              JP      RM17E6
+                      RM17D2:
+17D2: CD 40 21              CALL    RM2140
+17D5: CD 0B 28              CALL    RM280B
+17D8: CD 16 21              CALL    RM2116
+17DB: CD B0 1F              CALL    RM1FB0
+17DE: AF                    XOR     A			'A=0
+17DF: C9                    RET
+                      RM17E0:
+17E0: CD 27 30              CALL    RM3027
+17E3: CD DA 27              CALL    RM27DA
+                      RM17E6:
+17E6: CD EB 1F              CALL    RM1FEB
+17E9: 2A 33 32              LD      HL,(RM3233)		フリーステップ格納アドレス
+17EC: 2B                    DEC     HL
+17ED: 22 33 32              LD      (RM3233),HL
+17F0: 2A 35 32              LD      HL,(RM3235)		使用ステップ格納アドレス
+17F3: 23                    INC     HL				使用ステップ数を+1
+17F4: 22 35 32              LD      (RM3235),HL
+17F7: CD EE 24              CALL    RM24EE
+17FA: 2A 33 32              LD      HL,(RM3233)		フリーステップ格納アドレス
+17FD: 7C                    LD      A,H
+17FE: B5                    OR      L
+17FF: 20 06                 JR      NZ,RM1807
+1801: CD FF 1E              CALL    RM1EFF			メモリフル
+1804: C3 85 15              JP      RM1585
+                      RM1807:
+1807: CD B0 1F              CALL    RM1FB0
+180A: 3E 00                 LD      A,00h
+180C: 32 29 32              LD      (RM3229),A
+180F: C3 07 17              JP      RM1707
+                      RM1812:
+1812: CD 40 21              CALL    RM2140
+1815: C3 F7 1B              JP      RM1BF7
+                      RM1818:
+1818: CD FF 1E              CALL    RM1EFF			メモリフル
+181B: C3 6C 15              JP      RM156C
+                      RM181E:
+181E: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+1821: 7E                    LD      A,(HL)
+1822: FE FD                 CP      FDh				FDh,0Ch,06h(measure end)？
+1824: DA 6E 18              JP      C,RM186E
+1827: 2A 33 32              LD      HL,(RM3233)		フリーステップ格納アドレス
+182A: 01 11 00              LD      BC,0011h
+182D: ED 42                 SBC     HL,BC
+182F: DA 18 18              JP      C,RM1818
+1832: 22 33 32              LD      (RM3233),HL
+1835: 2A 35 32              LD      HL,(RM3235)		使用ステップ格納アドレス
+1838: 09                    ADD     HL,BC
+1839: 22 35 32              LD      (RM3235),HL
+183C: 2A F6 32              LD      HL,(RM32F6)
+183F: ED 4B E0 32           LD      BC,(RM32E0)		データの現在アドレス
+1843: ED 42                 SBC     HL,BC
+1845: 44                    LD      B,H
+1846: 4D                    LD      C,L
+1847: ED 5B F6 32           LD      DE,(RM32F6)
+184B: 1B                    DEC     DE
+184C: 21 33 00              LD      HL,0033h
+184F: 19                    ADD     HL,DE
+1850: EB                    EX      DE,HL
+1851: ED B8                 LDDR
+1853: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+1856: 06 10                 LD      B,10h
+                      RM1858:	リズムデータの初期値設定（7Fh,06h,01hｘ16）
+1858: 36 7F                 LD      (HL),7Fh
+185A: 23                    INC     HL
+185B: 36 06                 LD      (HL),06h
+185D: 23                    INC     HL
+185E: 36 01                 LD      (HL),01h
+1860: 23                    INC     HL
+1861: 10 F5                 DJNZ    RM1858
+1863: 36 FD                 LD      (HL),FDh	リズムパターン末尾(FDh,18h,06h)
+1865: 11 33 00              LD      DE,0033h
+1868: CD 61 21              CALL    RM2161
+186B: CD 71 23              CALL    RM2371
+                      RM186E:
+186E: 3E 40                 LD      A,40h
+1870: 32 2A 32              LD      (RM322A),A
+1873: 3E 10                 LD      A,10h
+1875: 32 2B 32              LD      (RM322B),A	AをX座標に
+1878: 3E 00                 LD      A,00h
+187A: 32 29 32              LD      (RM3229),A
+                      RM187D:
+187D: 3A 29 32              LD      A,(RM3229)
+1880: FE 00                 CP      00h
+1882: C2 D3 19              JP      NZ,RM19D3
+1885: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+1888: 57                    LD      D,A
+1889: 3A 2B 32              LD      A,(RM322B)	X座標をAに
+188C: 5F                    LD      E,A
+188D: CD 8E 31              CALL    RM318E		CURSOR E,D
+1890: CD 3F 31              CALL    RM313F		INPUT
+1893: FE 58                 CP      58h			'X'か？
+1895: CA C9 18              JP      Z,RM18C9
+1898: FE 03                 CP      03h			'→'か？
+189A: CA F6 18              JP      Z,RM18F6
+189D: FE 04                 CP      04h			'←'か？
+189F: CA 0B 19              JP      Z,RM190B
+18A2: FE 02                 CP      02h			'↑'か？
+18A4: CA 27 19              JP      Z,RM1927
+18A7: FE 01                 CP      01h			'↓'か？
+18A9: CA D5 18              JP      Z,RM18D5
+18AC: FE 0D                 CP      0Dh			'ENT'か？
+18AE: CA D5 18              JP      Z,RM18D5
+18B1: FE 43                 CP      43h			'C'か？
+18B3: CA 5A 19              JP      Z,RM195A
+18B6: FE 4D                 CP      4Dh			'M'か？
+18B8: CA 42 19              JP      Z,RM1942
+18BB: FE 51                 CP      51h			'Q'か？
+18BD: CA 6C 15              JP      Z,RM156C
+18C0: 2A E0 32              LD      HL,(RM32E0)
+18C3: 3A 2A 32              LD      A,(RM322A)
+18C6: B6                    OR      (HL)
+18C7: 18 08                 JR      RM18D1
+                      RM18C9:
+18C9: 2A E0 32              LD      HL,(RM32E0)
+18CC: 3A 2A 32              LD      A,(RM322A)
+18CF: 2F                    CPL				Aの値を反転
+18D0: A6                    AND     (HL)
+                      RM18D1:
+18D1: 77                    LD      (HL),A
+                      RM18D2:
+18D2: CD A4 1F              CALL    RM1FA4
+                      RM18D5:
+18D5: CD EB 1F              CALL    RM1FEB
+18D8: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+18DB: 7E                    LD      A,(HL)
+18DC: FE FD                 CP      FDh				FDh,0Ch,06h(measure end)？
+18DE: DA 7D 18              JP      C,RM187D
+18E1: CD 7C 23              CALL    RM237C
+                      RM18E4:
+18E4: CD 4D 1F              CALL    RM1F4D
+18E7: FE FD                 CP      FDh
+18E9: 38 F9                 JR      C,RM18E4
+18EB: CD 20 1F              CALL    RM1F20
+18EE: 3E 05                 LD      A,05h
+18F0: 32 28 32              LD      (RM3228),A	AをY座標に
+18F3: C3 7D 18              JP      RM187D
+                      RM18F6:
+18F6: 3A 2A 32              LD      A,(RM322A)
+18F9: 0F                    RRCA
+18FA: DA D3 19              JP      C,RM19D3
+18FD: 32 2A 32              LD      (RM322A),A
+1900: 3A 2B 32              LD      A,(RM322B)	X座標をAに
+1903: C6 02                 ADD     02h
+1905: 32 2B 32              LD      (RM322B),A	AをX座標に
+1908: C3 7D 18              JP      RM187D
+                      RM190B:
+190B: 3A 2A 32              LD      A,(RM322A)
+190E: 07                    RLCA
+190F: 07                    RLCA
+1910: DA 22 19              JP      C,RM1922
+1913: 0F                    RRCA
+1914: 32 2A 32              LD      (RM322A),A
+1917: 3A 2B 32              LD      A,(RM322B)	X座標をAに
+191A: D6 02                 SUB     02h
+191C: 32 2B 32              LD      (RM322B),A	AをX座標に
+191F: C3 7D 18              JP      RM187D
+                      RM1922:
+1922: 3E 01                 LD      A,01h
+1924: 32 29 32              LD      (RM3229),A
+                      RM1927:
+1927: 2A DE 32              LD      HL,(RM32DE)
+192A: 2B                    DEC     HL
+192B: 7C                    LD      A,H
+192C: B5                    OR      L
+192D: CA 36 19              JP      Z,RM1936
+1930: CD 10 20              CALL    RM2010
+1933: C3 7D 18              JP      RM187D
+                      RM1936:
+1936: 06 0F                 LD      B,0Fh
+                      RM1938:
+1938: C5                    PUSH    BC
+1939: CD EB 1F              CALL    RM1FEB
+193C: C1                    POP     BC
+193D: 10 F9                 DJNZ    RM1938
+193F: C3 7D 18              JP      RM187D
+                      RM1942:
+1942: CD 0B 28              CALL    RM280B
+1945: C3 7D 18              JP      RM187D
+1948: 00 03                 DEFB    00h,03h
+194A: 53 4F 55 52 43        DEFM	'SOURCE PATTERN:'
+194F: 45 20 50 41 54
+1954: 54 45 52 4E 3A
+1959: 00                    NOP
+195A: CD E7 1E              CALL    1EE7h
+195D: 21 2B 23              LD      HL 232Bh	00h,02h,'COPY'
+                      RM1960:
+1960: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+1963: 21 48 19              LD      HL,1948h	00h,03h,'SOURCE PATTERN:'
+1966: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+1969: 21 00 00              LD      HL,0000h
+196C: 22 1A 32              LD      (RM321A),HL
+196F: 11 12 03              LD      DE,0312h
+                      RM1972:
+1972: CD 99 30              CALL    RM3099
+1975: FE 0D                 CP      0Dh
+1977: 28 0D                 JR      Z,RM1986
+1979: FE 51                 CP      51h
+197B: C3 CA 19              JP      RM19CA
+197E: 2A 1A 32              LD      HL,(RM321A)
+1981: CD 7C 15              CALL    RM157C
+1984: 18 EC                 JR      RM1972
+                      RM1986:
+1986: 21 1A 32              LD      HL,321Ah
+1989: CD 09 31              CALL    RM3109
+198C: 2A 1A 32              LD      HL,(RM321A)
+198F: 7C                    LD      A,H
+1990: B5                    OR      L
+1991: CA CA 19              JP      Z,RM19CA
+1994: 22 DC 32              LD      (RM32DC),HL
+1997: 21 01 00              LD      HL,0001h
+199A: 22 DE 32              LD      (RM32DE),HL
+199D: CD 9E 20              CALL    RM209E
+19A0: 2A E0 32              LD      HL,(RM32E0)
+19A3: 7E                    LD      A,(HL)
+19A4: FE FE                 CP      FEh
+19A6: CA C5 19              JP      Z,RM19C5
+19A9: E5                    PUSH    HL
+19AA: CD F3 1E              CALL    RM1EF3
+19AD: 21 01 00              LD      HL,0001h
+19B0: 22 DE 32              LD      (RM32DE),HL
+19B3: CD 9E 20              CALL    RM209E
+19B6: ED 5B E0 32           LD      DE,(RM32E0)
+19BA: E1                    POP     HL
+19BB: 01 30 00              LD      BC,0030h
+19BE: ED B0                 LDIR
+19C0: CD 71 23              CALL    RM2371
+19C3: 18 08                 JR      RM19CD
+                      RM19C5:
+19C5: CD 14 0F              CALL    RM0F14		ベルを鳴らす(ラ：440Hz)
+19C8: 18 00                 JR      RM19CA
+                      RM19CA:
+19CA: CD F3 1E              CALL    RM1EF3
+                      RM19CD:
+19CD: CD 22 25              CALL    RM2522
+19D0: C3 7D 18              JP      RM187D
+                      RM19D3:
+19D3: 3E 01                 LD      A,01h
+                      RM19D5:
+19D5: 32 29 32              LD      (RM3229),A
+19D8: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+19DB: 57                    LD      D,A
+19DC: 1E 23                 LD      E,23h
+19DE: CD 8E 31              CALL    RM318E		CURSOR 35,D
+19E1: CD BE 2F              CALL    RM2FBE
+19E4: FE 02                 CP      02h
+19E6: CA 17 1A              JP      Z,RM1A17
+19E9: FE 01                 CP      01h
+19EB: CA 1D 1A              JP      Z,RM1A1D
+19EE: FE 0D                 CP      0Dh
+19F0: CA 1D 1A              JP      Z,RM1A1D
+19F3: FE 04                 CP      04h
+19F5: CA 23 1A              JP      Z,RM1A23
+19F8: FE 03                 CP      03h
+19FA: CA 38 1A              JP      Z,RM1A38
+19FD: FE 20                 CP      20h
+19FF: CA 38 1A              JP      Z,RM1A38
+                      RM1A02:
+1A02: FE 2E                 CP      2Eh
+1A04: CA 4D 1A              JP      Z,RM1A4D
+1A07: FE 4D                 CP      4Dh
+1A09: CA 42 19              JP      Z,RM1942
+1A0C: FE 51                 CP      51h
+1A0E: CA 6C 15              JP      Z,RM156C
+1A11: CD A4 1F              CALL    RM1FA4
+1A14: C3 D3 19              JP      RM19D3
+                      RM1A17:
+1A17: CD 27 30              CALL    RM3027
+1A1A: C3 27 19              JP      RM1927
+                      RM1A1D:
+1A1D: CD 27 30              CALL    RM3027
+1A20: C3 D2 18              JP      RM18D2
+                      RM1A23:
+1A23: CD 27 30              CALL    RM3027
+1A26: 3E 00                 LD      A,00h
+1A28: 32 29 32              LD      (RM3229),A
+1A2B: 3E 01                 LD      A,01h
+1A2D: 32 2A 32              LD      (RM322A),A
+1A30: 3E 1C                 LD      A,1Ch
+1A32: 32 2B 32              LD      (RM322B),A	AをX座標に
+1A35: C3 7D 18              JP      RM187D
+                      RM1A38:
+1A38: CD 27 30              CALL    RM3027
+1A3B: 3E 00                 LD      A,00h
+1A3D: 32 29 32              LD      (RM3229),A
+1A40: 3E 40                 LD      A,40h
+1A42: 32 2A 32              LD      (RM322A),A
+1A45: 3E 10                 LD      A,10h
+1A47: 32 2B 32              LD      (RM322B),A	AをX座標に
+1A4A: C3 D2 18              JP      RM18D2
+                      RM1A4D:
+1A4D: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+1A50: 2B                    DEC     HL
+1A51: 2B                    DEC     HL
+1A52: 2B                    DEC     HL
+1A53: 7E                    LD      A,(HL)
+1A54: FE FD                 CP      FDh		3バイト前がFDh,0Ch,06h(measure end)？
+1A56: D2 7D 18              JP      NC,RM187D
+1A59: 23                    INC     HL
+1A5A: 7E                    LD      A,(HL)
+1A5B: 23                    INC     HL
+1A5C: 23                    INC     HL
+1A5D: 23                    INC     HL
+1A5E: 77                    LD      (HL),A
+1A5F: CD A4 1F              CALL    RM1FA4
+1A62: C3 D2 18              JP      RM18D2
+                      RM1A65:
+1A65: 3A DB 32              LD      A,(RM32DB)
+1A68: FE 09                 CP      09h
+1A6A: CA 16 17              JP      Z,RM1716
+1A6D: 2A E0 32              LD      HL,(RM32E0)
+1A70: 36 FD                 LD      (HL),FDh
+                      RM1A72:
+1A72: 23                    INC     HL
+1A73: 36 0C                 LD      (HL),0Ch
+1A75: 23                    INC     HL
+1A76: 36 06                 LD      (HL),06h
+1A78: 2B                    DEC     HL
+1A79: 2B                    DEC     HL
+1A7A: CD F8 23              CALL    RM23F8
+1A7D: C3 E6 17              JP      RM17E6
+                      RM1A80:
+1A80: 3A DB 32              LD      A,(RM32DB)
+1A83: FE 09                 CP      09h
+1A85: CA 16 17              JP      Z,RM1716
+1A88: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+1A8B: 36 FC                 LD      (HL),FCh		FCh,0Ch,06h([　リピート開始)
+1A8D: C3 72 1A              JP      RM1A72
+                      RM1A90:
+1A90: 3A DB 32              LD      A,(RM32DB)
+1A93: FE 09                 CP      09h
+1A95: CA 16 17              JP      Z,RM1716
+1A98: 2A E0 32              LD      HL,(RM32E0)
+1A9B: 36 FB                 LD      (HL),FBh
+1A9D: 23                    INC     HL
+1A9E: 36 00                 LD      (HL),00h
+1AA0: 23                    INC     HL
+1AA1: 36 06                 LD      (HL),06h
+1AA3: 2B                    DEC     HL
+1AA4: 2B                    DEC     HL
+1AA5: CD F8 23              CALL    RM23F8
+1AA8: 3E 01                 LD      A,01h
+1AAA: 32 29 32              LD      (RM3229),A
+1AAD: C3 16 17              JP      RM1716
+1AB0: 06                 
+1AB1: 50 4F 49 4E 54        DEFM	'POINT EDIT'
+1AB6: 20 45 44 49 54
+1ABB: 0D                    DEFB	0Dh
+1ABC: 0D                    DEFB	0Dh
+1ABD: 45 44 49 54 20        DEFM	'EDIT CH ? '
+1AC2: 43 48 20 3F 20
+1AC7: 00                    NOP
+                      RM1AC8:	E:point edit
+1AC8: 21 B0 1A              LD      HL,1AB0h	'POINT EDIT'
+1ACB: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+1ACE: CD A9 21              CALL    RM21A9
+1AD1: D2 1A 13              JP      NC,RM131A		HOT START
+1AD4: 21 2F 32              LD      HL,322Fh		FREE STEPS
+1AD7: 11 11 00              LD      DE,0011h
+1ADA: 3A DB 32              LD      A,(RM32DB)
+1ADD: A7                    AND     A
+1ADE: 20 02                 JR      NZ,RM1AE2
+1AE0: 3E 09                 LD      A,09h
+                      RM1AE2:
+1AE2: 47                    LD      B,A
+                      RM1AE3:
+1AE3: 19                    ADD     HL,DE
+1AE4: 10 FD                 DJNZ    RM1AE3
+1AE6: 3A DB 32              LD      A,(RM32DB)
+1AE9: FE 09                 CP      09h
+1AEB: 20 0A                 JR      NZ,RM1AF7
+1AED: 2B                    DEC     HL
+1AEE: 2B                    DEC     HL
+1AEF: 2B                    DEC     HL
+1AF0: 2B                    DEC     HL
+1AF1: 2B                    DEC     HL
+1AF2: 5E                    LD      E,(HL)
+1AF3: 23                    INC     HL
+1AF4: 56                    LD      D,(HL)
+1AF5: 18 06                 JR      RM1AFD
+                      RM1AF7:
+1AF7: 5E                    LD      E,(HL)
+1AF8: 23                    INC     HL
+1AF9: 56                    LD      D,(HL)
+1AFA: 1B                    DEC     DE
+1AFB: 1B                    DEC     DE
+1AFC: 1B                    DEC     DE
+                      RM1AFD:
+1AFD: 1A                    LD      A,(DE)
+1AFE: FE FE                 CP      FEh
+1B00: 20 03                 JR      NZ,RM1B05
+1B02: 13                    INC     DE
+1B03: 13                    INC     DE
+1B04: 13                    INC     DE
+                      RM1B05:
+1B05: 21 7D 33              LD      HL,337Dh		データ先頭アドレス
+1B08: A7                    AND     A
+1B09: ED 52                 SBC     HL,DE
+1B0B: FA 11 1B              JP      M,RM1B11
+1B0E: 11 7D 33              LD      DE,337Dh		データ先頭アドレス
+                      RM1B11:
+1B11: 2A F6 32              LD      HL,(RM32F6)
+1B14: 2B                    DEC     HL
+1B15: 2B                    DEC     HL
+1B16: 2B                    DEC     HL
+1B17: E5                    PUSH    HL
+1B18: ED 52                 SBC     HL,DE
+1B1A: E1                    POP     HL
+1B1B: 30 02                 JR      NC,RM1B1F
+1B1D: 54                    LD      D,H
+1B1E: 5D                    LD      E,L
+                      RM1B1F:
+1B1F: ED 53 E0 32           LD      (RM32E0),DE
+1B23: CD 43 20              CALL    RM2043
+1B26: 3A DB 32              LD      A,(RM32DB)
+1B29: A7                    AND     A
+1B2A: 20 0A                 JR      NZ,RM1B36
+1B2C: 32 DF 32              LD      (RM32DF),A
+1B2F: 3C                    INC     A
+1B30: 32 DE 32              LD      (RM32DE),A
+1B33: CD 9E 20              CALL    RM209E
+                      RM1B36:
+1B36: AF                    XOR     A			'A=0
+1B37: 32 2C 32              LD      (RM322C),A
+1B3A: CD 71 23              CALL    RM2371
+1B3D: C3 95 15              JP      RM1595
+1B40: 06 0D                 LD      B,0Dh
+1B42: 41 4C 4C 20 43        DEFM	'ALL CLEAR (Y,N)? '
+1B47: 4C 45 41 52 20
+1B4C: 28 59 2C 4E 29
+1B51: 3F 20
+1B53: 00                    NOP
+                      RM1B54:
+1B54: 21 40 1B              LD      HL,1B40h	'ALL CLEAR (Y,N)? '
+1B57: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+1B5A: CD 3F 31              CALL    RM313F		INPUT
+1B5D: FE 59                 CP      59h			'Y'?
+1B5F: 3E 00                 LD      A,00h
+1B61: C0                    RET     NZ			'Y'以外なら何もしない
+                      RM1B62:
+1B62: 21 7A 33              LD      HL,337Ah	HLにスタックポインタ初期値
+1B65: 36 FD                 LD      (HL),FDh	(337Ah)=FDh
+1B67: 23                    INC     HL
+1B68: 23                    INC     HL
+1B69: 23                    INC     HL
+1B6A: 06 0A                 LD      B,0Ah
+                      RM1B6C:
+1B6C: 36 FE                 LD      (HL),FEh
+1B6E: 23                    INC     HL
+1B6F: 36 0C                 LD      (HL),0Ch
+1B71: 23                    INC     HL
+1B72: 36 06                 LD      (HL),06h
+1B74: 23                    INC     HL
+                      RM1B75:
+1B75: 10 F5                 DJNZ    RM1B6C
+1B77: AF                    XOR     A			'A=0
+1B78: 32 41 11              LD      (RM1141),A	NAMEの先頭を'0'
+1B7B: 32 2C 32              LD      (RM322C),A
+                      RM1B7E:ロード済データ解析？（確認中）
+1B7E: CD 40 21              CALL    RM2140
+1B81: 11 7D 33              LD      DE,337Dh		データ先頭アドレス
+1B84: 21 E2 32              LD      HL,32E2h
+1B87: 06 0B                 LD      B,0Bh
+1B89: 18 09                 JR      RM1B94
+                      RM1B8B:
+1B8B: 1A                    LD      A,(DE)
+1B8C: 13                    INC     DE
+1B8D: 13                    INC     DE
+1B8E: 13                    INC     DE
+1B8F: FE FE                 CP      FEh
+1B91: DA 8B 1B              JP      C,RM1B8B
+                      RM1B94:
+1B94: 73                    LD      (HL),E
+1B95: 23                    INC     HL
+                      RM1B96:
+1B96: 72                    LD      (HL),D
+1B97: 23                    INC     HL
+1B98: 10 F1                 DJNZ    RM1B8B
+1B9A: 2A 31 32              LD      HL,(RM3231)		TOTALメモリをHLに格納
+1B9D: ED 5B F6 32           LD      DE,(RM32F6)
+1BA1: A7                    AND     A
+1BA2: ED 52                 SBC     HL,DE
+1BA4: CD DA 1E              CALL    RM1EDA
+1BA7: ED 43 33 32           LD      (RM3233),BC
+1BAB: 2A 2F 32              LD      HL,(RM322F)		FREE STEPS
+1BAE: A7                    AND     A
+1BAF: ED 42                 SBC     HL,BC
+1BB1: 01 0A 00              LD      BC,000Ah
+1BB4: ED 42                 SBC     HL,BC
+1BB6: 22 35 32              LD      (RM3235),HL
+1BB9: CD DF 29              CALL    RM29DF
+1BBC: 3E 01                 LD      A,01h
+1BBE: 32 DB 32              LD      (RM32DB),A
+1BC1: 21 01 00              LD      HL,0001h
+1BC4: 22 DC 32              LD      (RM32DC),HL
+1BC7: 22 DE 32              LD      (RM32DE),HL
+1BCA: 3E 00                 LD      A,00h
+1BCC: 32 29 32              LD      (RM3229),A
+1BCF: 2A E4 32              LD      HL,(RM32E4)
+1BD2: 22 E0 32              LD      (RM32E0),HL
+1BD5: AF                    XOR     A			'A=0
+1BD6: 32 2D 32              LD      (RM322D),A
+1BD9: 32 26 32              LD      (RM3226),A
+1BDC: 32 27 32              LD      (RM3227),A
+1BDF: C9                    RET
+                      RM1BE0:
+1BE0: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+1BE3: ED 44                 NEG
+1BE5: C6 18                 ADD     18h
+1BE7: 47                    LD      B,A
+                      RM1BE8:
+1BE8: CD 20 1F              CALL    RM1F20
+1BEB: FE FE                 CP      FEh
+1BED: 30 02                 JR      NC,RM1BF1
+1BEF: 10 F7                 DJNZ    RM1BE8
+                      RM1BF1:
+1BF1: CD 71 23              CALL    RM2371
+1BF4: C3 95 15              JP      RM1595
+                      RM1BF7:
+1BF7: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+1BFA: D6 04                 SUB     04h
+1BFC: 47                    LD      B,A
+1BFD: 3E 05                 LD      A,05h
+1BFF: 32 28 32              LD      (RM3228),A	AをY座標に
+                      RM1C02:
+1C02: CD 4D 1F              CALL    RM1F4D
+1C05: 10 FB                 DJNZ    RM1C02
+1C07: FE FE                 CP      FEh
+1C09: D2 95 15              JP      NC,RM1595
+1C0C: 06 12                 LD      B,12h
+                      RM1C0E:
+1C0E: CD 4D 1F              CALL    RM1F4D
+1C11: FE FE                 CP      FEh
+1C13: 30 02                 JR      NC,RM1C17
+1C15: 10 F7                 DJNZ    RM1C0E
+                      RM1C17:
+1C17: 16 05                 LD      D,05h
+1C19: CD 71 23              CALL    RM2371
+1C1C: C3 95 15              JP      RM1595
+                      RM1C1F:
+1C1F: CD E7 1E              CALL    RM1EE7
+1C22: 21 09 23              LD      HL,2309h	00h,02h,'DELETE'
+1C25: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+1C28: 21 16 23              LD      HL,2316h	07h,03h,'END'
+1C2B: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+1C2E: CD E5 21              CALL    RM21E5
+1C31: 30 57                 JR      NC,RM1C8A
+1C33: 2A E0 32              LD      HL,(RM32E0)
+1C36: 7E                    LD      A,(HL)
+1C37: FE FE                 CP      FEh
+1C39: 30 03                 JR      NC,RM1C3E
+1C3B: 23                    INC     HL
+1C3C: 23                    INC     HL
+1C3D: 23                    INC     HL
+                      RM1C3E:
+1C3E: E5                    PUSH    HL
+1C3F: CD F3 1E              CALL    RM1EF3
+1C42: ED 4B E0 32           LD      BC,(RM32E0)
+1C46: E1                    POP     HL
+1C47: 54                    LD      D,H
+1C48: 5D                    LD      E,L
+1C49: A7                    AND     A
+1C4A: ED 42                 SBC     HL,BC
+1C4C: DA 95 15              JP      C,RM1595
+1C4F: 2A F6 32              LD      HL,(RM32F6)
+1C52: 42                    LD      B,D
+1C53: 4B                    LD      C,E
+1C54: ED 42                 SBC     HL,BC
+1C56: 44                    LD      B,H
+1C57: 4D                    LD      C,L
+1C58: EB                    EX      DE,HL
+1C59: E5                    PUSH    HL
+1C5A: ED 5B E0 32           LD      DE,(RM32E0)
+1C5E: ED B0                 LDIR
+1C60: CD 5C 21              CALL    RM215C
+1C63: E1                    POP     HL
+1C64: ED 5B E0 32           LD      DE,(RM32E0)
+1C68: A7                    AND     A
+1C69: ED 52                 SBC     HL,DE
+1C6B: CD DA 1E              CALL    RM1EDA
+1C6E: 2A 33 32              LD      HL,(RM3233)		フリーステップ格納アドレス
+1C71: 09                    ADD     HL,BC
+1C72: 22 33 32              LD      (RM3233),HL
+1C75: 2A 35 32              LD      HL,(RM3235)		使用ステップ格納アドレス
+1C78: ED 42                 SBC     HL,BC
+1C7A: 22 35 32              LD      (RM3235),HL
+1C7D: CD EE 24              CALL    RM24EE
+1C80: 3A 28 32              LD      A,(RM3228)		Y座標をAに
+1C83: 57                    LD      D,A
+1C84: CD 5F 25              CALL    RM255F
+1C87: C3 8B 15              JP      RM158B
+                      RM1C8A:
+1C8A: CD F3 1E              CALL    RM1EF3
+1C8D: C3 8B 15              JP      RM158B
+                      RM1C90:
+1C90: 3A DB 32              LD      A,(RM32DB)
+1C93: FE 09                 CP      09h
+1C95: CA 95 15              JP      Z,RM1595
+1C98: CD E7 1E              CALL    RM1EE7
+1C9B: 21 1C 23              LD      HL,231Ch	00h,02h,'TRANSPOSE'
+1C9E: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+1CA1: 21 16 23              LD      HL,2316h	07h,03h,'END'
+1CA4: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+                      RM1CA7:
+1CA7: CD E5 21              CALL    RM21E5
+1CAA: 30 DE                 JR      NC,RM1C8A
+1CAC: AF                    XOR     A			'A=0
+1CAD: 32 24 32              LD      (RM3224),A
+1CB0: CD 73 22              CALL    RM2273
+1CB3: 30 F2                 JR      NC,RM1CA7
+1CB5: 2A E0 32              LD      HL,(RM32E0)
+1CB8: E5                    PUSH    HL
+1CB9: CD F3 1E              CALL    RM1EF3
+1CBC: ED 5B E0 32           LD      DE,(RM32E0)
+1CC0: E1                    POP     HL
+1CC1: A7                    AND     A
+1CC2: ED 52                 SBC     HL,DE
+1CC4: DA 95 15              JP      C,RM1595
+1CC7: CD DA 1E              CALL    RM1EDA
+1CCA: 03                    INC     BC
+1CCB: 2A E0 32              LD      HL,(RM32E0)
+1CCE: CD DB 1C              CALL    RM1CDB
+1CD1: AF                    XOR     A			'A=0
+1CD2: 32 24 32              LD      (RM3224),A
+1CD5: CD 7C 23              CALL    RM237C
+1CD8: C3 8B 15              JP      RM158B
+                      RM1CDB:
+1CDB: 78                    LD      A,B
+1CDC: B1                    OR      C
+1CDD: C8                    RET     Z
+1CDE: CD 8C 21              CALL    RM218C
+1CE1: 23                    INC     HL
+1CE2: 23                    INC     HL
+1CE3: 23                    INC     HL
+1CE4: 0B                    DEC     BC
+1CE5: 18 F4                 JR      RM1CDB
+                      RM1CE7:
+1CE7: 3A DB 32              LD      A,(RM32DB)
+1CEA: FE 09                 CP      09h
+1CEC: CA 16 17              JP      Z,RM1716
+1CEF: CD 40 21              CALL    RM2140
+                      RM1CF2:
+1CF2: 3A DB 32              LD      A,(RM32DB)
+1CF5: FE 09                 CP      09h
+1CF7: CA 95 15              JP      Z,RM1595
+1CFA: CD E7 1E              CALL    RM1EE7
+1CFD: 21 2B 23              LD      HL,232Bh	00h,02h,'COPY'
+1D00: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+1D03: 21 36 23              LD      HL,2336h	00h,03h,'SOURCE CH:  TOP MEAS:     END MEAS:'
+1D06: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+                      RM1D09:
+1D09: 11 0A 03              LD      DE,030Ah
+1D0C: CD 8E 31              CALL    RM318E		CURSOR 12,3
+                      RM1D0F:
+1D0F: CD 3F 31              CALL    RM313F		INPUT
+1D12: FE 0D                 CP      0Dh
+1D14: 28 22                 JR      Z,RM1D38
+1D16: FE 20                 CP      20h
+1D18: 28 1E                 JR      Z,RM1D38
+1D1A: FE 51                 CP      51h
+1D1C: CA D4 1E              JP      Z,RM1ED4
+1D1F: FE 31                 CP      31h
+1D21: FA 0F 1D              JP      M,RM1D0F
+1D24: FE 39                 CP      39h
+1D26: F2 0F 1D              JP      P,RM1D0F
+1D29: 4F                    LD      C,A
+1D2A: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+1D2D: CD AC 31              CALL    RM31AC
+1D30: 79                    LD      A,C
+1D31: D6 30                 SUB     30h
+1D33: 32 DB 32              LD      (RM32DB),A
+1D36: 18 D7                 JR      RM1D0F
+                      RM1D38:
+1D38: 3A DB 32              LD      A,(RM32DB)
+1D3B: C6 30                 ADD     30h
+1D3D: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+                      RM1D40:
+1D40: 21 01 00              LD      HL,0001h
+1D43: 22 DC 32              LD      (RM32DC),HL
+1D46: 11 18 03              LD      DE,0318h
+                      RM1D49:
+1D49: CD 99 30              CALL    RM3099
+1D4C: FE 0D                 CP      0Dh
+1D4E: 28 0D                 JR      Z,RM1D5D
+1D50: FE 20                 CP      20h
+1D52: 28 09                 JR      Z,RM1D5D
+1D54: FE 51                 CP      51h
+1D56: 28 B1                 JR      Z,RM1D09
+1D58: CD 7C 15              CALL    RM157C
+1D5B: 18 EC                 JR      RM1D49
+                      RM1D5D:
+1D5D: 21 DC 32              LD      HL,32DCh
+1D60: CD 09 31              CALL    RM3109
+1D63: 21 00 00              LD      HL,0000h
+1D66: 22 DE 32              LD      (RM32DE),HL
+1D69: CD 9E 20              CALL    RM209E
+1D6C: 2A DC 32              LD      HL,(RM32DC)
+1D6F: CD 7C 15              CALL    RM157C
+1D72: 2A E0 32              LD      HL,(RM32E0)
+1D75: 22 1A 32              LD      (RM321A),HL
+                      RM1D78:
+1D78: 21 0F 27              LD      HL,270Fh
+1D7B: 22 DC 32              LD      (RM32DC),HL
+1D7E: 11 26 03              LD      DE,0326h
+                      RM1D81:
+1D81: CD 99 30              CALL    RM3099
+1D84: FE 0D                 CP      0Dh
+1D86: 28 0D                 JR      Z,RM1D95
+1D88: FE 20                 CP      20h
+1D8A: 28 09                 JR      Z,RM1D95
+1D8C: FE 51                 CP      51h
+1D8E: 28 B0                 JR      Z,RM1D40
+1D90: CD 7C 15              CALL    RM157C
+1D93: 18 EC                 JR      RM1D81
+                      RM1D95:
+1D95: 21 DC 32              LD      HL,32DCh
+1D98: CD 09 31              CALL    RM3109
+1D9B: 21 0F 27              LD      HL,270Fh
+1D9E: 22 DE 32              LD      (RM32DE),HL
+1DA1: CD 9E 20              CALL    RM209E
+1DA4: 2A DC 32              LD      HL,(RM32DC)
+1DA7: CD 7C 15              CALL    RM157C
+1DAA: 2A E0 32              LD      HL,(RM32E0)
+1DAD: 22 1C 32              LD      (RM321C),HL
+1DB0: 21 5C 23              LD      HL,235Ch	0Fh,02h,'TIMES:'
+1DB3: CD 10 2F              CALL    RM2F10		CURSOR D,E:PRINT HL(00まで)
+                      RM1DB6:
+1DB6: 21 01 00              LD      HL,0001h
+1DB9: 22 22 32              LD      (RM3222),HL
+1DBC: 11 18 02              LD      DE,0218h
+                      RM1DBF:
+1DBF: CD 99 30              CALL    RM3099
+1DC2: FE 0D                 CP      0Dh
+1DC4: 28 0F                 JR      Z,RM1DD5
+1DC6: FE 20                 CP      20h
+1DC8: CA D5 1D              JP      Z,RM1DD5
+1DCB: FE 51                 CP      51h
+1DCD: CA 78 1D              JP      Z,RM1D78
+1DD0: CD 7C 15              CALL    RM157C
+1DD3: 18 EA                 JR      RM1DBF
+                      RM1DD5:
+1DD5: 21 22 32              LD      HL,3222h
+1DD8: CD 09 31              CALL    RM3109
+1DDB: AF                    XOR     A			'A=0
+1DDC: 32 24 32              LD      (RM3224),A
+1DDF: CD 73 22              CALL    RM2273
+1DE2: 30 D2                 JR      NC,RM1DB6
+1DE4: CD F3 1E              CALL    RM1EF3
+1DE7: 2A 1C 32              LD      HL,(RM321C)
+1DEA: 7E                    LD      A,(HL)
+1DEB: FE FE                 CP      FEh
+1DED: 30 03                 JR      NC,RM1DF2
+1DEF: 23                    INC     HL
+1DF0: 23                    INC     HL
+1DF1: 23                    INC     HL
+                      RM1DF2:
+1DF2: 22 1C 32              LD      (RM321C),HL
+1DF5: ED 5B 1A 32           LD      DE,(RM321A)
+1DF9: A7                    AND     A
+1DFA: ED 52                 SBC     HL,DE
+1DFC: DA D1 1E              JP      C,RM1ED1
+1DFF: CA D1 1E              JP      Z,RM1ED1
+1E02: 22 1E 32              LD      (RM321E),HL
+1E05: 54                    LD      D,H
+1E06: 5D                    LD      E,L
+1E07: ED 4B 22 32           LD      BC,(RM3222)
+1E0B: 78                    LD      A,B
+1E0C: B1                    OR      C
+1E0D: CA AD 1E              JP      Z,RM1EAD
+                      RM1E10:
+1E10: 0B                    DEC     BC
+1E11: 78                    LD      A,B
+1E12: B1                    OR      C
+1E13: 28 06                 JR      Z,RM1E1B
+1E15: 19                    ADD     HL,DE
+1E16: DA CE 1E              JP      C,RM1ECE
+1E19: 18 F5                 JR      RM1E10
+                      RM1E1B:
+1E1B: 22 20 32              LD      (RM3220),HL
+1E1E: 2A E0 32              LD      HL,(RM32E0)
+1E21: ED 5B 1C 32           LD      DE,(RM321C)
+1E25: A7                    AND     A
+1E26: ED 52                 SBC     HL,DE
+1E28: 30 18                 JR      NC,RM1E42
+1E2A: ED 5B E0 32           LD      DE,(RM32E0)
+1E2E: 2A 1A 32              LD      HL,(RM321A)
+1E31: A7                    AND     A
+1E32: ED 52                 SBC     HL,DE
+1E34: DA D1 1E              JP      C,RM1ED1
+1E37: 2A 1A 32              LD      HL,(RM321A)
+1E3A: ED 5B 20 32           LD      DE,(RM3220)
+1E3E: 19                    ADD     HL,DE
+1E3F: 22 1A 32              LD      (RM321A),HL
+                      RM1E42:
+1E42: 2A 20 32              LD      HL,(RM3220)
+1E45: CD DA 1E              CALL    RM1EDA
+1E48: C5                    PUSH    BC
+1E49: 2A 33 32              LD      HL,(RM3233)		フリーステップ格納アドレス
+1E4C: A7                    AND     A
+1E4D: ED 42                 SBC     HL,BC
+1E4F: DA CE 1E              JP      C,RM1ECE
+1E52: 22 33 32              LD      (RM3233),HL
+1E55: 2A 35 32              LD      HL,(RM3235)		使用ステップ格納アドレス
+1E58: 09                    ADD     HL,BC
+1E59: 22 35 32              LD      (RM3235),HL
+1E5C: 2A F6 32              LD      HL,(RM32F6)
+1E5F: ED 4B E0 32           LD      BC,(RM32E0)
+1E63: A7                    AND     A
+1E64: ED 42                 SBC     HL,BC
+1E66: 44                    LD      B,H
+1E67: 4D                    LD      C,L
+1E68: ED 5B F6 32           LD      DE,(RM32F6)
+1E6C: 1B                    DEC     DE
+1E6D: 2A 20 32              LD      HL,(RM3220)
+1E70: 19                    ADD     HL,DE
+1E71: EB                    EX      DE,HL
+1E72: ED B8                 LDDR
+1E74: CD 5C 21              CALL    RM215C
+1E77: ED 4B 22 32           LD      BC,(RM3222)
+1E7B: ED 5B E0 32           LD      DE,(RM32E0)
+1E7F: D5                    PUSH    DE
+1E80: 04                    INC     B
+                      RM1E81:
+1E81: C5                    PUSH    BC
+1E82: 2A 1A 32              LD      HL,(RM321A)
+1E85: ED 4B 1E 32           LD      BC,(RM321E)
+1E89: ED B0                 LDIR
+1E8B: C1                    POP     BC
+1E8C: 0D                    DEC     C
+1E8D: C2 81 1E              JP      NZ,RM1E81
+1E90: 10 EF                 DJNZ    RM1E81
+1E92: 2A E0 32              LD      HL,(RM32E0)
+1E95: ED 5B 20 32           LD      DE,(RM3220)
+1E99: 19                    ADD     HL,DE
+1E9A: 22 E0 32              LD      (RM32E0),HL
+1E9D: E1                    POP     HL
+1E9E: C1                    POP     BC
+1E9F: 3A 24 32              LD      A,(RM3224)
+1EA2: A7                    AND     A
+1EA3: C4 DB 1C              CALL    NZ,RM1CDB
+1EA6: AF                    XOR     A			'A=0
+1EA7: 32 24 32              LD      (RM3224),A
+1EAA: CD 43 20              CALL    RM2043
+                      RM1EAD:
+1EAD: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+1EB0: D6 05                 SUB     05h
+1EB2: 47                    LD      B,A
+1EB3: F5                    PUSH    AF
+1EB4: 28 07                 JR      Z,RM1EBD
+                      RM1EB6:
+1EB6: C5                    PUSH    BC
+1EB7: CD 10 20              CALL    RM2010
+1EBA: C1                    POP     BC
+1EBB: 10 F9                 DJNZ    RM1EB6
+                      RM1EBD:
+1EBD: CD 71 23              CALL    RM2371
+1EC0: F1                    POP     AF
+1EC1: 28 08                 JR      Z,RM1ECB
+1EC3: 47                    LD      B,A
+                      RM1EC4:
+1EC4: C5                    PUSH    BC
+1EC5: CD EB 1F              CALL    RM1FEB
+1EC8: C1                    POP     BC
+1EC9: 10 F9                 DJNZ    RM1EC4
+                      RM1ECB:
+1ECB: C3 95 15              JP      RM1595
+                      RM1ECE:
+1ECE: CD FF 1E              CALL    RM1EFF		メモリフル
+                      RM1ED1:
+1ED1: CD 14 0F              CALL    RM0F14		ベルを鳴らす(ラ：440Hz)
+                      RM1ED4:
+1ED4: CD F3 1E              CALL    RM1EF3
+1ED7: C3 AD 1E              JP      RM1EAD
+                      RM1EDA:	入力:HL[FREEエリア BYTE]、出力:BC[FREE STEPS]]
+1EDA: 11 03 00              LD      DE,0003h	1STEP=3BYTE
+1EDD: 01 FF FF              LD      BC,FFFFh
+                      RM1EE0:
+1EE0: 03                    INC     BC
+1EE1: ED 52                 SBC     HL,DE
+1EE3: D2 E0 1E              JP      NC,RM1EE0
+1EE6: C9                    RET
+                      RM1EE7:
+1EE7: 21 DB 32              LD      HL,32DBh
+1EEA: 11 D4 32              LD      DE,32D4h
+1EED: 01 07 00              LD      BC,0007h
+1EF0: ED B0                 LDIR
+1EF2: C9                    RET
+                      RM1EF3:
+1EF3: 21 D4 32              LD      HL,32D4h
+1EF6: 11 DB 32              LD      DE,32DBh
+1EF9: 01 07 00              LD      BC,0007h
+1EFC: ED B0                 LDIR
+1EFE: C9                    RET
+                      RM1EFF:	メモリフル
+1EFF: 21 0B 1F              LD      HL,1F0Bh	' SORRY - MEMORY FULL'
+1F02: 11 00 02              LD      DE,0200h	CURSOR 02h,00h
+1F05: CD 14 2F              CALL    RM2F14		CURSOR D,E:PRINT HL(00まで)
+1F08: C3 14 0F              JP      RM0F14		ベルを鳴らす(ラ：440Hz)
+1F0B: 20 53 4F 52 52        DEFM	' SORRY - MEMORY FULL'
+1F10: 59 20 2D 20 4D
+1F15: 45 4D 4F 52 59
+1F1A: 20 46 55 4C 4C
+1F1F: 00                    NOP                      RM1F20:
+1F20: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+1F23: 7E                    LD      A,(HL)
+1F24: 23                    INC     HL
+1F25: 23                    INC     HL
+1F26: 23                    INC     HL
+1F27: 22 E0 32              LD      (RM32E0),HL		現在のアドレスを3バイト進める
+1F2A: FE FD                 CP      FDh				FDh,0Ch,06h(measure end)？
+1F2C: 28 0A                 JR      Z,RM1F38
+1F2E: 30 16                 JR      NC,RM1F46
+1F30: 2A DE 32              LD      HL,(RM32DE)
+1F33: 23                    INC     HL
+1F34: 22 DE 32              LD      (RM32DE),HL
+1F37: C9                    RET
+                      RM1F38:
+1F38: 2A DC 32              LD      HL,(RM32DC)
+1F3B: 23                    INC     HL
+1F3C: 22 DC 32              LD      (RM32DC),HL
+1F3F: 21 01 00              LD      HL,0001h
+1F42: 22 DE 32              LD      (RM32DE),HL
+1F45: C9                    RET
+                      RM1F46:
+1F46: 2B                    DEC     HL
+1F47: 2B                    DEC     HL
+1F48: 2B                    DEC     HL
+1F49: 22 E0 32              LD      (RM32E0),HL
+1F4C: C9                    RET
+                      RM1F4D:
+1F4D: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+1F50: 2B                    DEC     HL
+1F51: 2B                    DEC     HL
+1F52: 2B                    DEC     HL
+1F53: 22 E0 32              LD      (RM32E0),HL		現在のアドレスを3バイト戻る
+1F56: 7E                    LD      A,(HL)
+1F57: FE FD                 CP      FDh				FDh,0Ch,06h(measure end)？
+1F59: 28 0A                 JR      Z,RM1F65
+1F5B: 30 22                 JR      NC,RM1F7F
+1F5D: 2A DE 32              LD      HL,(RM32DE)
+                      RM1F60:
+1F60: 2B                    DEC     HL
+1F61: 22 DE 32              LD      (RM32DE),HL
+1F64: C9                    RET
+                      RM1F65:
+1F65: F5                    PUSH    AF
+1F66: 11 00 00              LD      DE,0000h
+                      RM1F69:
+1F69: 13                    INC     DE
+1F6A: 2B                    DEC     HL
+1F6B: 2B                    DEC     HL
+1F6C: 2B                    DEC     HL
+1F6D: 7E                    LD      A,(HL)
+1F6E: FE FD                 CP      FDh
+1F70: 38 F7                 JR      C,RM1F69
+1F72: ED 53 DE 32           LD      (RM32DE),DE
+1F76: 2A DC 32              LD      HL,(RM32DC)
+1F79: 2B                    DEC     HL
+1F7A: 22 DC 32              LD      (RM32DC),HL
+1F7D: F1                    POP     AF
+1F7E: C9                    RET
+                      RM1F7F:
+1F7F: 23                    INC     HL
+1F80: 23                    INC     HL
+1F81: 23                    INC     HL
+1F82: 22 E0 32              LD      (RM32E0),HL
+1F85: C9                    RET
+                      RM1F86:
+1F86: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+1F89: 57                    LD      D,A
+1F8A: 3A 29 32              LD      A,(RM3229)
+1F8D: FE 00                 CP      00h
+1F8F: 20 05                 JR      NZ,RM1F96
+1F91: 1E 15                 LD      E,15h
+1F93: C3 8E 31              JP      RM318E		CURSOR 21,D
+                      RM1F96:
+1F96: FE 01                 CP      01h
+1F98: 20 05                 JR      NZ,RM1F9F
+1F9A: 1E 1C                 LD      E,1Ch
+1F9C: C3 8E 31              JP      RM318E		CURSOR 28,D
+                      RM1F9F:
+1F9F: 1E 23                 LD      E,23h
+1FA1: C3 8E 31              JP      RM318E		CURSOR 35,D
+                      RM1FA4:
+1FA4: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+1FA7: 57                    LD      D,A
+1FA8: 1E 15                 LD      E,15h
+1FAA: 2A E0 32              LD      HL,(RM32E0)
+1FAD: C3 F8 23              JP      RM23F8
+                      RM1FB0:
+1FB0: 2A E0 32              LD      HL,(RM32E0)
+1FB3: E5                    PUSH    HL
+                      RM1FB4:
+1FB4: 2B                    DEC     HL
+1FB5: 2B                    DEC     HL
+1FB6: 2B                    DEC     HL
+1FB7: 7E                    LD      A,(HL)
+1FB8: FE FE                 CP      FEh
+1FBA: 28 0A                 JR      Z,RM1FC6
+1FBC: FE FB                 CP      FBh
+1FBE: 30 F4                 JR      NC,RM1FB4
+1FC0: 23                    INC     HL
+1FC1: 46                    LD      B,(HL)
+1FC2: 23                    INC     HL
+1FC3: 4E                    LD      C,(HL)
+1FC4: 18 11                 JR      RM1FD7
+                      RM1FC6:
+1FC6: 3A DB 32              LD      A,(RM32DB)
+1FC9: FE 09                 CP      09h
+1FCB: 20 04                 JR      NZ,RM1FD1
+1FCD: 3E 01                 LD      A,01h
+1FCF: 18 06                 JR      RM1FD7
+                      RM1FD1:
+1FD1: 3E 18                 LD      A,18h
+1FD3: 06 18                 LD      B,18h
+1FD5: 0E 06                 LD      C,06h
+                      RM1FD7:
+1FD7: E1                    POP     HL
+1FD8: 77                    LD      (HL),A
+1FD9: 23                    INC     HL
+1FDA: 70                    LD      (HL),B
+1FDB: 23                    INC     HL
+1FDC: 71                    LD      (HL),C
+1FDD: 23                    INC     HL
+1FDE: ED 5B F8 32           LD      DE,(RM32F8)
+1FE2: EB                    EX      DE,HL
+1FE3: A7                    AND     A
+1FE4: ED 52                 SBC     HL,DE
+1FE6: C8                    RET     Z
+1FE7: EB                    EX      DE,HL
+1FE8: 36 FF                 LD      (HL),FFh
+1FEA: C9                    RET
+                      RM1FEB:
+1FEB: CD 20 1F              CALL    RM1F20
+1FEE: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+1FF1: 3C                    INC     A
+1FF2: FE 18                 CP      18h			Y座標は24か？
+1FF4: 32 28 32              LD      (RM3228),A	AをY座標に
+1FF7: C0                    RET     NZ
+1FF8: 06 06                 LD      B,06h
+                      RM1FFA:
+1FFA: CD 4D 1F              CALL    RM1F4D
+1FFD: 10 FB                 DJNZ    RM1FFA
+1FFF: CD 71 23              CALL    RM2371
+2002: 3E 0B                 LD      A,0Bh
+2004: 32 28 32              LD      (RM3228),A	AをY座標に
+2007: D6 05                 SUB     05h
+2009: 47                    LD      B,A
+                      RM200A:
+200A: CD 20 1F              CALL    RM1F20
+200D: 10 FB                 DJNZ    RM200A
+200F: C9                    RET
+                      RM2010:
+2010: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+2013: 3D                    DEC     A
+2014: FE 04                 CP      04h
+2016: 32 28 32              LD      (RM3228),A	AをY座標に
+2019: C2 4D 1F              JP      NZ,RM1F4D
+201C: 3E 05                 LD      A,05h
+201E: 32 28 32              LD      (RM3228),A	AをY座標に
+2021: CD 4D 1F              CALL    RM1F4D
+2024: FE FE                 CP      FEh
+2026: D0                    RET     NC
+2027: 06 0C                 LD      B,0Ch
+                      RM2029:
+2029: CD 4D 1F              CALL    RM1F4D
+202C: FE FE                 CP      FEh
+202E: D2 33 20              JP      NC,RM2033
+2031: 10 F6                 DJNZ    RM2029
+                      RM2033:
+2033: C5                    PUSH    BC
+2034: CD 71 23              CALL    RM2371
+2037: C1                    POP     BC
+2038: 3E 0C                 LD      A,0Ch
+203A: 90                    SUB     B
+203B: C8                    RET     Z
+203C: 47                    LD      B,A
+                      RM203D:
+203D: CD EB 1F              CALL    RM1FEB
+2040: 10 FB                 DJNZ    RM203D
+2042: C9                    RET
+                      RM2043:
+2043: ED 4B E0 32           LD      BC,(RM32E0)
+2047: 21 E4 32              LD      HL,32E4h	1CH先頭アドレス格納
+                      RM204A:
+204A: 5E                    LD      E,(HL)
+204B: 23                    INC     HL
+204C: 56                    LD      D,(HL)
+204D: 23                    INC     HL
+204E: EB                    EX      DE,HL
+204F: 37                    SCF
+2050: ED 42                 SBC     HL,BC
+2052: EB                    EX      DE,HL
+2053: DA 4A 20              JP      C,RM204A
+2056: 54                    LD      D,H
+2057: 5D                    LD      E,L
+2058: 01 E6 32              LD      BC,32E6h
+205B: A7                    AND     A
+205C: ED 42                 SBC     HL,BC
+205E: 7D                    LD      A,L
+205F: CB 3F                 SRL     A
+2061: 32 DB 32              LD      (RM32DB),A
+2064: EB                    EX      DE,HL
+2065: 2B                    DEC     HL
+2066: 2B                    DEC     HL
+2067: 2B                    DEC     HL
+2068: 56                    LD      D,(HL)
+2069: 2B                    DEC     HL
+206A: 5E                    LD      E,(HL)
+206B: 2A E0 32              LD      HL,(RM32E0)
+206E: A7                    AND     A
+206F: ED 52                 SBC     HL,DE
+2071: EB                    EX      DE,HL
+2072: DD 21 01 00           LD      IX,0001h
+2076: FD 21 01 00           LD      IY,0001h
+                      RM207A:
+207A: 7A                    LD      A,D
+207B: B3                    OR      E
+207C: 28 17                 JR      Z,RM2095
+207E: 7E                    LD      A,(HL)
+207F: 23                    INC     HL
+2080: 23                    INC     HL
+2081: 23                    INC     HL
+2082: 1B                    DEC     DE
+2083: 1B                    DEC     DE
+2084: 1B                    DEC     DE
+2085: FD 23                 INC     IY
+2087: FE FD                 CP      FDh
+2089: DA 7A 20              JP      C,RM207A
+208C: DD 23                 INC     IX
+208E: FD 21 01 00           LD      IY,0001h
+2092: C3 7A 20              JP      RM207A
+                      RM2095:
+2095: DD 22 DC 32           LD      (RM32DC),IX
+2099: FD 22 DE 32           LD      (RM32DE),IY
+209D: C9                    RET
+                      RM209E:
+209E: 3A DB 32              LD      A,(RM32DB)
+20A1: 87                    ADD     A
+20A2: 21 E2 32              LD      HL,32E2h
+20A5: 85                    ADD     L
+20A6: 6F                    LD      L,A
+20A7: 30 01                 JR      NC,RM20AA
+20A9: 24                    INC     H
+                      RM20AA:
+20AA: 5E                    LD      E,(HL)
+20AB: 23                    INC     HL
+20AC: 56                    LD      D,(HL)
+20AD: EB                    EX      DE,HL
+20AE: ED 4B DC 32           LD      BC,(RM32DC)
+20B2: 78                    LD      A,B
+20B3: B1                    OR      C
+20B4: C2 BC 20              JP      NZ,RM20BC
+20B7: 03                    INC     BC
+20B8: ED 43 DC 32           LD      (RM32DC),BC
+                      RM20BC:
+20BC: 0B                    DEC     BC
+20BD: 78                    LD      A,B
+20BE: B1                    OR      C
+20BF: 28 24                 JR      Z,RM20E5
+20C1: 11 00 00              LD      DE,0000h
+                      RM20C4:
+20C4: 7E                    LD      A,(HL)
+20C5: 23                    INC     HL
+20C6: 23                    INC     HL
+20C7: 23                    INC     HL
+20C8: 13                    INC     DE
+20C9: FE FD                 CP      FDh
+20CB: DA C4 20              JP      C,RM20C4
+20CE: CA BC 20              JP      Z,RM20BC
+20D1: 2B                    DEC     HL
+20D2: 2B                    DEC     HL
+20D3: 2B                    DEC     HL
+20D4: 22 E0 32              LD      (RM32E0),HL
+20D7: 2A DC 32              LD      HL,(RM32DC)
+20DA: A7                    AND     A
+20DB: ED 42                 SBC     HL,BC
+20DD: 22 DC 32              LD      (RM32DC),HL
+20E0: ED 53 DE 32           LD      (RM32DE),DE
+20E4: C9                    RET
+                      RM20E5:
+20E5: ED 4B DE 32           LD      BC,(RM32DE)
+20E9: 78                    LD      A,B
+20EA: B1                    OR      C
+20EB: C2 F3 20              JP      NZ,RM20F3
+20EE: 03                    INC     BC
+20EF: ED 43 DE 32           LD      (RM32DE),BC
+                      RM20F3:
+20F3: 0B                    DEC     BC
+20F4: 78                    LD      A,B
+20F5: B1                    OR      C
+20F6: CA 12 21              JP      Z,RM2112
+20F9: 7E                    LD      A,(HL)
+20FA: 23                    INC     HL
+20FB: 23                    INC     HL
+20FC: 23                    INC     HL
+20FD: FE FD                 CP      FDh
+20FF: DA F3 20              JP      C,RM20F3
+2102: 2B                    DEC     HL
+2103: 2B                    DEC     HL
+2104: 2B                    DEC     HL
+2105: 22 E0 32              LD      (RM32E0),HL
+2108: 2A DE 32              LD      HL,(RM32DE)
+210B: A7                    AND     A
+210C: ED 42                 SBC     HL,BC
+210E: 22 DE 32              LD      (RM32DE),HL
+2111: C9                    RET
+                      RM2112:
+2112: 22 E0 32              LD      (RM32E0),HL
+2115: C9                    RET
+                      RM2116:
+2116: 3A 2C 32              LD      A,(RM322C)
+2119: A7                    AND     A
+211A: C0                    RET     NZ
+211B: 2A F6 32              LD      HL,(RM32F6)
+211E: ED 5B E0 32           LD      DE,(RM32E0)
+2122: A7                    AND     A
+2123: ED 52                 SBC     HL,DE
+2125: 44                    LD      B,H
+2126: 4D                    LD      C,L
+2127: 2A F6 32              LD      HL,(RM32F6)
+212A: 2B                    DEC     HL
+212B: ED 5B 31 32           LD      DE,(RM3231)		TOTALメモリをDEに格納
+212F: 1B                    DEC     DE
+2130: ED B8                 LDDR
+2132: 13                    INC     DE
+2133: ED 53 F8 32           LD      (RM32F8),DE
+2137: 23                    INC     HL
+2138: 3E FF                 LD      A,FFh
+213A: 32 2C 32              LD      (RM322C),A
+213D: C3 5C 21              JP      RM215C
+                      RM2140:
+2140: 3A 2C 32              LD      A,(RM322C)
+2143: A7                    AND     A			'CP 0
+2144: C8                    RET     Z			'0なら戻る
+2145: 2A 31 32              LD      HL,(RM3231)		TOTALメモリをHLに格納
+2148: ED 5B F8 32           LD      DE,(RM32F8)
+214C: A7                    AND     A
+214D: ED 52                 SBC     HL,DE
+214F: 44                    LD      B,H
+2150: 4D                    LD      C,L
+2151: EB                    EX      DE,HL
+2152: ED 5B E0 32           LD      DE,(RM32E0)
+2156: ED B0                 LDIR
+2158: AF                    XOR     A			'A=0
+2159: 32 2C 32              LD      (RM322C),A
+                      RM215C:
+215C: EB                    EX      DE,HL
+215D: A7                    AND     A
+215E: ED 52                 SBC     HL,DE
+2160: EB                    EX      DE,HL
+                      RM2161:
+2161: 21 E4 32              LD      HL,32E4h	1CH先頭アドレス格納
+2164: 3A DB 32              LD      A,(RM32DB)
+2167: 87                    ADD     A
+2168: 85                    ADD     L
+2169: 6F                    LD      L,A
+216A: 30 01                 JR      NC,RM216D
+216C: 24                    INC     H
+                      RM216D:
+216D: E5                    PUSH    HL
+216E: DD E1                 POP     IX
+2170: 3A DB 32              LD      A,(RM32DB)
+2173: ED 44                 NEG
+2175: C6 0A                 ADD     0Ah
+2177: 47                    LD      B,A
+                      RM2178:
+2178: DD 66 01              LD      H,(IX+01h)
+217B: DD 6E 00              LD      L,(IX+00h)
+217E: 19                    ADD     HL,DE
+217F: DD 74 01              LD      (IX+01h),H
+2182: DD 75 00              LD      (IX+00h),L
+2185: DD 23                 INC     IX
+2187: DD 23                 INC     IX
+2189: 10 ED                 DJNZ    RM2178
+218B: C9                    RET
+                      RM218C:
+218C: 7E                    LD      A,(HL)
+218D: FE FB                 CP      FBh
+218F: D0                    RET     NC
+2190: 3A 24 32              LD      A,(RM3224)
+2193: A7                    AND     A
+2194: FA A1 21              JP      M,RM21A1
+2197: 86                    ADD     (HL)
+                      RM2198:
+2198: 77                    LD      (HL),A
+2199: FE 71                 CP      71h
+219B: D8                    RET     C
+219C: D6 0C                 SUB     0Ch
+219E: C3 98 21              JP      RM2198
+                      RM21A1:
+21A1: 86                    ADD     (HL)
+                      RM21A2:
+21A2: 77                    LD      (HL),A
+21A3: F0                    RET     P
+21A4: C6 0C                 ADD     0Ch
+21A6: C3 A2 21              JP      RM21A2
+                      RM21A9:
+21A9: 3A DB 32              LD      A,(RM32DB)
+21AC: FE 09                 CP      09h
+21AE: 20 06                 JR      NZ,RM21B6
+21B0: 2A DE 32              LD      HL,(RM32DE)
+21B3: 22 DC 32              LD      (RM32DC),HL
+                      RM21B6:
+21B6: CD 3F 31              CALL    RM313F		INPUT
+21B9: FE 0D                 CP      0Dh
+21BB: CA DB 21              JP      Z,RM21DB
+21BE: FE 51                 CP      51h
+21C0: C8                    RET     Z
+21C1: FE 30                 CP      30h
+21C3: FA B6 21              JP      M,RM21B6
+21C6: FE 3A                 CP      3Ah
+21C8: F2 B6 21              JP      P,RM21B6
+21CB: 4F                    LD      C,A
+21CC: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+21CF: CD AC 31              CALL    RM31AC
+21D2: 79                    LD      A,C
+21D3: D6 30                 SUB     30h
+21D5: 32 DB 32              LD      (RM32DB),A
+21D8: C3 B6 21              JP      RM21B6
+                      RM21DB:
+21DB: 3A DB 32              LD      A,(RM32DB)
+21DE: C6 30                 ADD     30h
+21E0: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+21E3: 37                    SCF
+21E4: C9                    RET
+                      RM21E5:
+21E5: 3A DB 32              LD      A,(RM32DB)
+21E8: A7                    AND     A
+21E9: 20 05                 JR      NZ,RM21F0
+21EB: 21 F6 22              LD      HL,22F6h	01h,03h,'PATTERN:'
+21EE: 18 03                 JR      RM21F3
+                      RM21F0:
+21F0: 21 EB 22              LD      HL,22EBh	01h,03h,'MEASURE:'
+                      RM21F3:
+21F3: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+                      RM21F6:
+21F6: 11 0C 03              LD      DE,030Ch
+                      RM21F9:
+21F9: CD 99 30              CALL    RM3099
+21FC: FE 0D                 CP      0Dh
+21FE: CA 12 22              JP      Z,RM2212
+2201: FE 20                 CP      20h
+2203: CA 12 22              JP      Z,RM2212
+2206: FE 51                 CP      51h
+2208: C8                    RET     Z
+2209: 2A DC 32              LD      HL,(RM32DC)
+220C: CD 7C 15              CALL    RM157C
+220F: C3 F9 21              JP      RM21F9
+                      RM2212:
+2212: 21 DC 32              LD      HL,32DCh
+2215: CD 09 31              CALL    RM3109
+2218: 2A DC 32              LD      HL,(RM32DC)
+221B: CD 7C 15              CALL    RM157C
+221E: 3A DB 32              LD      A,(RM32DB)
+2221: A7                    AND     A
+2222: 20 08                 JR      NZ,RM222C
+2224: 21 01 00              LD      HL,0001h
+2227: 22 DE 32              LD      (RM32DE),HL
+222A: 18 42                 JR      RM226E
+                      RM222C:
+222C: FE 09                 CP      09h
+222E: 20 0E                 JR      NZ,RM223E
+2230: 2A DC 32              LD      HL,(RM32DC)
+2233: 22 DE 32              LD      (RM32DE),HL
+2236: 21 01 00              LD      HL,0001h
+2239: 22 DC 32              LD      (RM32DC),HL
+223C: 18 30                 JR      RM226E
+                      RM223E:
+223E: 21 01 23              LD      HL,2301h	0Eh,03h,'STEP:
+2241: CD 10 2F              CALL    RM2F10		CURSOR D,E:PRINT HL(00まで)
+2244: 11 16 03              LD      DE,0316h
+                      RM2247:
+2247: CD 99 30              CALL    RM3099
+224A: FE 0D                 CP      0Dh
+224C: CA 62 22              JP      Z,RM2262
+224F: FE 20                 CP      20h
+2251: CA 62 22              JP      Z,RM2262
+2254: FE 51                 CP      51h
+2256: CA F6 21              JP      Z,RM21F6
+2259: 2A DE 32              LD      HL,(RM32DE)
+225C: CD 7C 15              CALL    RM157C
+225F: C3 47 22              JP      RM2247
+                      RM2262:
+2262: 21 DE 32              LD      HL,32DEh
+2265: CD 09 31              CALL    RM3109
+2268: 2A DE 32              LD      HL,(RM32DE)
+226B: CD 7C 15              CALL    RM157C
+                      RM226E:
+226E: CD 9E 20              CALL    RM209E
+2271: 37                    SCF
+2272: C9                    RET
+                      RM2273:
+2273: 21 65 23              LD      HL,2365h	1Eh,02h,'BIAS:    '
+2276: CD 10 2F              CALL    RM2F10		CURSOR D,E:PRINT HL(00まで)
+2279: CD AC 31              CALL    RM31AC
+227C: 3E 2B                 LD      A,2Bh
+227E: 32 25 32              LD      (RM3225),A
+                      RM2281:
+2281: CD BE 2F              CALL    RM2FBE
+2284: FE 0D                 CP      0Dh
+2286: 28 2B                 JR      Z,RM22B3
+2288: FE 20                 CP      20h
+228A: 28 27                 JR      Z,RM22B3
+228C: FE 51                 CP      51h
+228E: C8                    RET     Z
+228F: FE 2B                 CP      2Bh
+2291: 28 13                 JR      Z,RM22A6
+2293: FE 2D                 CP      2Dh
+2295: 28 0F                 JR      Z,RM22A6
+2297: CD A7 31              CALL    RM31A7
+                      RM229A:
+229A: AF                    XOR     A			'A=0
+229B: 32 24 32              LD      (RM3224),A
+229E: CD 90 2F              CALL    RM2F90
+22A1: CD AC 31              CALL    RM31AC
+22A4: 18 DB                 JR      RM2281
+                      RM22A6:
+22A6: 32 25 32              LD      (RM3225),A
+22A9: F5                    PUSH    AF
+22AA: CD A2 31              CALL    RM31A2
+22AD: F1                    POP     AF
+22AE: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+22B1: 18 E7                 JR      RM229A
+                      RM22B3:
+22B3: 3A 0A 32              LD      A,(RM320A)
+22B6: FE 20                 CP      20h
+22B8: 28 2F                 JR      Z,RM22E9
+22BA: 01 00 00              LD      BC,0000h
+22BD: 3A 08 32              LD      A,(RM3208)
+22C0: CD 15 30              CALL    RM3015
+22C3: 3A 09 32              LD      A,(RM3209)
+22C6: CD 15 30              CALL    RM3015
+22C9: 3A 0A 32              LD      A,(RM320A)
+22CC: CD 15 30              CALL    RM3015
+22CF: 21 18 00              LD      HL,0018h
+22D2: A7                    AND     A
+22D3: ED 42                 SBC     HL,BC
+22D5: 30 05                 JR      NC,RM22DC
+22D7: CD 14 0F              CALL    RM0F14		ベルを鳴らす(ラ：440Hz)
+22DA: 0E 18                 LD      C,18h
+                      RM22DC:
+22DC: 3A 25 32              LD      A,(RM3225)
+22DF: FE 2D                 CP      2Dh
+22E1: 79                    LD      A,C
+22E2: 20 01                 JR      NZ,RM22E5
+22E4: ED 44                 NEG
+22E6: 32 24 32              LD      (RM3224),A
+                      RM22E9:
+22E9: 37                    SCF
+22EA: C9                    RET
+22EB: 01 03                 DEFB    01h,03h		CURSOR 03h,01h
+22ED: 4D 45 41 53 55        DEFM	'MEASURE:'
+22F2: 52 45 3A
+22F5: 00                    DEFB    00h
+22F6: 01 03                 DEFB    01h,03h		CURSOR 03h,01h
+22F8: 50 41 54 54 45        DEFM	'PATTERN:'
+22FD: 52 4E 3A
+2300: 00                    DEFB    00h
+2301: 0E 03                 DEFB    0Eh,03h		CURSOR 03h,0Eh
+2303: 53 54 45 50 3A        DEFM	'STEP:
+2308: 00                    DEFB    00h
+2309: 00 02                 DEFB    00h,02h		CURSOR 02h,00h
+230B: 44 45 4C 45 54        DEFM	'DELETE ...'
+2310: 45 20 2E 2E 2E
+2315: 00                    DEFB    00h
+2316: 07 03                 DEFB    07h,03h		CURSOR 03h,07h
+2318: 45 4E 44              DEFM	'END'
+231B: 00                    DEFB    00h
+231C: 00 02                 DEFB    00h,02h		CURSOR 02h,00h
+231E: 54 52 41 4E 53        DEFM	'TRANSPOSE ...'
+2323: 50 4F 53 45 20
+2328: 2E 2E 2E
+232B: 00 02                 DEFB    00h,02h		CURSOR 02h,00h
+232D: 43 4F 50 59 20        DEFM	'COPY ...'
+2332: 2E 2E 2E
+2335: 00                    DEFB    00h
+2336: 00 03                 DEFB    00h,03h		CURSOR 03h,00h
+2338: 53 4F 55 52 43        DEFM	'SOURCE CH:  TOP MEAS:     END MEAS:'
+233D: 45 20 43 48 3A
+2342: 20 20 54 4F 50        
+2347: 20 4D 45 41 53
+234C: 3A 20 20 20 20
+2351: 20 45 4E 44 20
+2356: 4D 45 41 53 3A
+235B: 00                    DEFB    00h
+235C: 0F 02                 DEFB    0Fh,02h		CURSOR 02h,0Fh
+235E: 54 49 4D 45 53        DEFM	'TIMES:'
+2363: 3A
+2364: 00                    DEFB    00h
+2365: 1E 02                 DEFB    1Eh,02h		CURSOR 02h,1Eh
+2367: 42 49 41 53 3A        DEFM	'BIAS:    '
+236C: 20 20 20 20
+2370: 00                    DEFB    00h                      RM2371:
+2371: CD 98 31              CALL    RM3198
+2374: CD DF 24              CALL    RM24DF
+2377: 3E 05                 LD      A,05h
+2379: 32 28 32              LD      (RM3228),A	AをY座標に
+                      RM237C:
+237C: 2A E0 32              LD      HL,(RM32E0)
+237F: DD 2A DC 32           LD      IX,(RM32DC)
+                      RM2383:
+2383: FD 2A DE 32           LD      IY,(RM32DE)
+2387: 3A 28 32              LD      A,(RM3228)	Y座標をAに
+238A: 57                    LD      D,A
+                      RM238B:
+238B: CD E0 23              CALL    RM23E0
+238E: 14                    INC     D
+238F: 7A                    LD      A,D
+                      RM2390:
+2390: FE 18                 CP      18h
+2392: C2 8B 23              JP      NZ,RM238B
+2395: C9                    RET
+                      RM2396:
+2396: E5                    PUSH    HL
+2397: 3A DB 32              LD      A,(RM32DB)
+239A: FE 09                 CP      09h
+239C: 28 2A                 JR      Z,RM23C8
+239E: 1E 02                 LD      E,02h
+23A0: CD 8E 31              CALL    RM318E		CURSOR 2,D
+23A3: FD E5                 PUSH    IY
+23A5: E1                    POP     HL
+23A6: E5                    PUSH    HL
+23A7: 7D                    LD      A,L
+23A8: D6 01                 SUB     01h
+23AA: B4                    OR      H
+23AB: 28 25                 JR      Z,RM23D2
+23AD: 7A                    LD      A,D
+23AE: FE 05                 CP      05h
+23B0: 28 20                 JR      Z,RM23D2
+23B2: CD 21 2F              CALL    RM2F21
+                      RM23B5:
+23B5: E1                    POP     HL
+23B6: CD 56 2F              CALL    RM2F56
+23B9: 21 C1 23              LD      HL,23C1h	' :    '
+23BC: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+23BF: E1                    POP     HL
+23C0: C9                    RET
+23C1: 20 3A 20 20 20        DEFM	' :    '
+23C6: 20
+23C7: 00                    NOP
+                      RM23C8:
+23C8: 1E 07                 LD      E,07h
+23CA: CD 8E 31              CALL    RM318E		CURSOR 7,D
+23CD: FD E5                 PUSH    IY
+23CF: C3 B5 23              JP      RM23B5
+                      RM23D2:
+23D2: CD 3F 2F              CALL    RM2F3F
+23D5: DD E5                 PUSH    IX
+23D7: E1                    POP     HL
+23D8: CD 56 2F              CALL    RM2F56
+23DB: CD 3A 2F              CALL    RM2F3A
+23DE: 18 D5                 JR      RM23B5
+                      RM23E0:
+23E0: 3A DB 32              LD      A,(RM32DB)
+23E3: A7                    AND     A
+23E4: 20 0F                 JR      NZ,RM23F5
+23E6: 7E                    LD      A,(HL)
+                      RM23E7:
+23E7: FE FD                 CP      FDh
+23E9: 20 0A                 JR      NZ,RM23F5
+23EB: 33                    INC     SP
+23EC: 33                    INC     SP
+23ED: 1E 13                 LD      E,13h
+23EF: CD 8E 31              CALL    RM318E		CURSOR 19,D
+23F2: C3 5C 24              JP      RM245C
+                      RM23F5:
+23F5: CD 96 23              CALL    RM2396
+                      RM23F8:
+23F8: 1E 13                 LD      E,13h
+23FA: CD 8E 31              CALL    RM318E		CURSOR 19,D
+                      RM23FD:
+23FD: 7E                    LD      A,(HL)
+23FE: FE FE                 CP      FEh
+2400: D2 A0 24              JP      NC,RM24A0
+2403: 3A DB 32              LD      A,(RM32DB)
+2406: FE 09                 CP      09h
+2408: CA D5 24              JP      Z,RM24D5
+240B: 7E                    LD      A,(HL)
+240C: FE FC                 CP      FCh
+240E: CA 4E 24              JP      Z,RM244E
+2411: FE FB                 CP      FBh
+2413: CA 39 24              JP      Z,RM2439
+2416: FE FD                 CP      FDh
+2418: CA 5C 24              JP      Z,RM245C
+241B: 3A DB 32              LD      A,(RM32DB)
+241E: A7                    AND     A
+241F: 7E                    LD      A,(HL)
+2420: CA AB 24              JP      Z,RM24AB
+2423: CD 90 2F              CALL    RM2F90
+2426: CD 30 2F              CALL    RM2F30
+2429: 23                    INC     HL
+242A: 7E                    LD      A,(HL)
+242B: CD 90 2F              CALL    RM2F90
+242E: CD 30 2F              CALL    RM2F30
+2431: 23                    INC     HL
+2432: 7E                    LD      A,(HL)
+2433: 23                    INC     HL
+2434: FD 23                 INC     IY
+2436: C3 90 2F              JP      RM2F90
+                      RM2439:
+2439: E5                    PUSH    HL
+243A: 21 B6 25              LD      HL,25B6h	'  ]    '
+243D: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+2440: E1                    POP     HL
+2441: 23                    INC     HL
+2442: 7E                    LD      A,(HL)
+2443: CD 90 2F              CALL    RM2F90
+2446: CD 21 2F              CALL    RM2F21
+2449: 23                    INC     HL
+244A: 23                    INC     HL
+244B: FD 23                 INC     IY
+244D: C9                    RET
+                      RM244E:
+244E: E5                    PUSH    HL
+244F: 21 96 25              LD      HL,2596h	'  [              '
+2452: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+2455: E1                    POP     HL
+2456: 23                    INC     HL
+2457: 23                    INC     HL
+2458: 23                    INC     HL
+2459: FD 23                 INC     IY
+245B: C9                    RET
+                      RM245C:
+245C: E5                    PUSH    HL
+245D: 21 A8 25              LD      HL,25A8h	'  * TOTAL ST='
+2460: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+2463: E1                    POP     HL
+2464: E5                    PUSH    HL
+                      RM2465:
+2465: 2B                    DEC     HL
+2466: 2B                    DEC     HL
+2467: 2B                    DEC     HL
+2468: 7E                    LD      A,(HL)
+2469: FE FD                 CP      FDh
+246B: DA 65 24              JP      C,RM2465
+246E: DD E5                 PUSH    IX
+2470: D5                    PUSH    DE
+2471: DD 21 00 00           LD      IX,0000h
+2475: 16 00                 LD      D,00h
+                      RM2477:
+2477: 23                    INC     HL
+                      RM2478:
+2478: 23                    INC     HL
+2479: 23                    INC     HL
+247A: 7E                    LD      A,(HL)
+247B: FE FD                 CP      FDh
+247D: CA 8C 24              JP      Z,RM248C
+2480: FE FB                 CP      FBh
+2482: D2 77 24              JP      NC,RM2477
+2485: 23                    INC     HL
+2486: 5E                    LD      E,(HL)
+2487: DD 19                 ADD     IX,DE
+2489: C3 78 24              JP      RM2478
+                      RM248C:
+248C: DD E5                 PUSH    IX
+248E: E1                    POP     HL
+248F: CD 56 2F              CALL    RM2F56
+2492: D1                    POP     DE
+2493: DD E1                 POP     IX
+2495: E1                    POP     HL
+2496: 23                    INC     HL
+2497: 23                    INC     HL
+2498: 23                    INC     HL
+2499: DD 23                 INC     IX
+249B: FD 21 01 00           LD      IY,0001h
+249F: C9                    RET
+                      RM24A0:
+24A0: 1E 00                 LD      E,00h
+24A2: 21 6E 25              LD      HL,256Eh	PRINT SPACEx39
+24A5: CD 14 2F              CALL    RM2F14		CURSOR D,E:PRINT HL(00まで)
+24A8: 33                    INC     SP
+24A9: 33                    INC     SP
+24AA: C9                    RET
+                      RM24AB:
+24AB: CD A2 31              CALL    RM31A2
+24AE: CD BE 24              CALL    RM24BE
+24B1: CD 35 2F              CALL    RM2F35
+24B4: 23                    INC     HL
+24B5: 7E                    LD      A,(HL)
+24B6: CD 90 2F              CALL    RM2F90
+24B9: 23                    INC     HL
+24BA: 23                    INC     HL
+24BB: FD 23                 INC     IY
+24BD: C9                    RET
+                      RM24BE:
+24BE: 7E                    LD      A,(HL)
+24BF: 4F                    LD      C,A
+24C0: CB 21                 SLA     C
+24C2: 06 07                 LD      B,07h
+                      RM24C4:
+24C4: CB 21                 SLA     C
+24C6: 3E 2E                 LD      A,2Eh
+24C8: 38 02                 JR      C,RM24CC
+24CA: 3E 58                 LD      A,58h
+                      RM24CC:
+24CC: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+24CF: CD 3F 2F              CALL    RM2F3F
+24D2: 10 F0                 DJNZ    RM24C4
+24D4: C9                    RET
+                      RM24D5:
+24D5: 7E                    LD      A,(HL)
+24D6: CD 90 2F              CALL    RM2F90
+24D9: 23                    INC     HL
+24DA: 23                    INC     HL
+24DB: 23                    INC     HL
+24DC: FD 23                 INC     IY
+24DE: C9                    RET
+                      RM24DF:
+24DF: CD E8 24              CALL    RM24E8		ヘッダー表示
+24E2: CD 22 25              CALL    RM2522
+24E5: C3 45 25              JP      RM2545
+                      RM24E8: 	ヘッダー表示
+24E8: 21 BE 25              LD      HL,25BEh	'       STEPS USED    '
+24EB: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+                      RM24EE:
+24EE: CD 93 31              CALL    RM3193			"HOME"に移動
+24F1: 2A 35 32              LD      HL,(RM3235)		使用ステップ格納アドレス
+24F4: CD 49 2F              CALL    RM2F49
+24F7: 11 00 01              LD      DE,0100h
+24FA: CD 8E 31              CALL    RM318E		CURSOR 0,1
+24FD: 2A 33 32              LD      HL,(RM3233)		フリーステップ格納アドレス
+2500: CD 49 2F              CALL    RM2F49
+2503: 21 F8 25              LD      HL,25F8h	1Eh,01h,'CHANNEL:'
+2506: CD 10 2F              CALL    RM2F10		CURSOR D,E:PRINT HL(00まで)
+2509: 3A DB 32              LD      A,(RM32DB)
+250C: C6 30                 ADD     30h
+250E: C3 88 31              JP      RM3188	'1文字プリント。カーソル・コントロール可
+                      RM2511:
+2511: 3A 2D 32              LD      A,(RM322D)
+2514: A7                    AND     A
+2515: 20 05                 JR      NZ,RM251C
+2517: 21 09 26              LD      HL,2609h	'**'
+251A: 18 03                 JR      RM251F
+                      RM251C:
+251C: 21 0C 26              LD      HL,260Ch	'=='
+                      RM251F:
+251F: C3 17 2F              JP      RM2F17		"00"になるまで１文字プリントを繰り返す
+                      RM2522:
+2522: 21 03 26              LD      HL,2603h	00h,02h,""
+2525: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+2528: 21 06 26              LD      HL,2606h	11h,03h,'**'
+252B: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+252E: CD 11 25              CALL    RM2511
+2531: 3A 2C 32              LD      A,(RM322C)
+2534: A7                    AND     A
+2535: 20 05                 JR      NZ,RM253C
+2537: 21 0F 26              LD      HL,260Fh	' SCREEN EDIT MODE '
+253A: 18 03                 JR      RM253F
+                      RM253C:
+253C: 21 22 26              LD      HL,2622h	'   INSERT MODE '
+                      RM253F:
+253F: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+2542: C3 11 25              JP      RM2511
+                      RM2545:
+2545: 3A DB 32              LD      A,(RM32DB)
+2548: A7                    AND     A
+2549: 20 05                 JR      NZ,RM2550
+254B: 21 5C 26              LD      HL,265Ch	00h,04h,'PATTERN  STEP   '
+254E: 18 0C                 JR      RM255C
+                      RM2550:
+2550: FE 09                 CP      09h
+2552: 28 05                 JR      Z,RM2559
+2554: 21 35 26              LD      HL,2635h	00h,04h,'   MEAS  STEP       
+2557: 18 03                 JR      RM255C
+                      RM2559:
+2559: 21 83 26              LD      HL,2683h	07h,04h,'MEAS    PATTERN'
+                      RM255C:
+255C: C3 03 2F              JP      RM2F03		行をクリアして1行PRINT
+                      RM255F:
+255F: 1E 00                 LD      E,00h
+2561: 21 6E 25              LD      HL,256Eh	PRINT SPACEx39
+2564: CD 14 2F              CALL    RM2F14		CURSOR D,E:PRINT HL(00まで)
+2567: 14                    INC     D
+2568: 7A                    LD      A,D
+2569: FE 18                 CP      18h
+256B: 20 F2                 JR      NZ,RM255F
+256D: C9                    RET
+256E: 20 20 20 20 20        DEFM	'                                       '
+2573: 20 20 20 20 20
+2578: 20 20 20 20 20
+257D: 20 20 20 20 20
+2582: 20 20 20 20 20
+2587: 20 20 20 20 20
+258C: 20 20 20 20 20
+2591: 20 20 20 20
+2595: 00                    NOP
+2596: 20 20 5B 20 20        DEFM	'  [              '
+259B: 20 20 20 20 20
+25A0: 20 20 20 20 20
+25A5: 20 20
+25A7: 00                    NOP
+25A8: 20 20 2A 20 54        DEFM	'  * TOTAL ST='
+25AD: 4F 54 41 4C 20
+25B2: 53 54 3D
+25B5: 00                    NOP
+25B6: 20 20 5D 20 20        DEFM	'  ]    '
+25BB: 20 20
+25BD: 00                    NOP
+25BE: 06                    DEFM	'©'
+25BF: 20 20 20 20 20        DEFM	'       STEPS USED    '
+25C4: 20 53 54 45 50
+25C9: 53 20 55 53 45
+25CE: 44 20 20 20 20
+25D3: 20 20 41 4D 44        DEFM	'  AMDEK COMPU-MUSIC'
+25D8: 45 4B 20 43 4F
+25DD: 4D 50 55 2D 4D
+25E2: 55 53 49 43
+25E6: 0D                    DEFB	0Dh
+25E7: 20 20 20 20 20        DEFM	'      STEPS FREE
+25EC: 20 53 54 45 50
+25F1: 53 20 46 52 45
+25F6: 45
+25F7: 00                    NOP
+25F8: 1E 01                 DEFB    1Eh,01h		CURSOR 01h,1Eh
+25FA: 43 48 41 4E 4E        DEFM	'CHANNEL:'
+25FF: 45 4C 3A
+2602: 00                    DEFB    00h
+2603: 00 02                 DEFB    00h,02h		CURSOR 02h,00h
+2605: 00                    DEFB    00h
+2606: 11 03                 DEFB    11h,03h		CURSOR 03h,11h
+2608: 00                    DEFB    00h
+2609: 2A 2A                 DEFM	'**'
+260B: 00
+260C: 3D 3D                 DEFM	'=='
+260E: 00                    NOP
+260F: 20 53 43 52 45        DEFM	' SCREEN EDIT MODE '
+2614: 45 4E 20 45 44
+2619: 49 54 20 4D 4F
+261E: 44 45 20
+2621: 00                    NOP
+2622: 20 20 20 49 4E        DEFM	'   INSERT MODE '
+2627: 53 45 52 54 20
+262C: 4D 4F 44 45 20
+2631: 20 20 20
+2634: 00                    DEFB    00h
+2635: 00 04                 DEFB    00h,04h		CURSOR 04h,00h
+2637: 20 20 20 4D 45         DEFM	'   MEAS  STEP       
+263C: 41 53 20 20 53
+2641: 54 45 50 20 20        
+2646: 20 20 20 20 20
+264B: 43 56 20 20 20        DEFM	'CV     ST     GT'
+2650: 20 20 53 54 20
+2655: 20 20 20 20 47
+265A: 54
+265B: 00                    DEFB    00h
+265C: 00 04                 DEFB    00h,04h		CURSOR 04h,00h
+265E: 50 41 54 54 45        DEFM	'PATTERN  STEP   '
+2663: 52 4E 20 20 53
+2668: 54 45 50 20 20
+266D: 20 42 20 53 20        DEFM	'B S L H Y O C     ST'
+2672: 4C 20 48 20 59
+2677: 20 4F 20 43 20
+267C: 20 20 20 20 53
+2681: 54
+2682: 00                    DEFB    00h
+2683: 07 04                 DEFB    07h,04h		CURSOR 04h,07h
+2685: 4D 45 41 53 20        DEFM	'MEAS    PATTERN'
+268A: 20 20 20 50 41
+268F: 54 54 45 52 4E
+2694: 00                    DEFB    00h
+2695: 03 05                 DEFB    03h,05h		CURSOR 05h,03h
+2697: 50 4C 41 59 49        DEFM	'PLAYING : '
+269C: 4E 47 20 3A 20
+26A1: 00                    DEFB    00h
+26A2: 03 05                 DEFB    03h,05h		CURSOR 05h,03h
+26A4: 4C 4F 4F 50 20        DEFM	'LOOP PLAY : '
+26A9: 50 4C 41 59 20
+26AE: 3A 20
+26B0: 00                    DEFB    00h
+26B1: 00 02                 DEFB    00h,02h		CURSOR 02h,00h
+26B3: 50 4F 49 4E 54        DEFM	'POINT PLAY ...'
+26B8: 20 50 4C 41 59
+26BD: 20 2E 2E 2E
+26C1: 00                    DEFB    00h
+26C2: 03 03                 DEFB    03h,03h		CURSOR 03h,03h
+26C4: 4A 55 53 54 20        DEFM	'JUST A MOMENT !'
+26C9: 41 20 4D 4F 4D
+26CE: 45 4E 54 20 21
+26D3: 00                    DEFB    00h
+26D4: 06                    DEFM	'©'
+26D5: 20 20 20 20 20        DEFM	'      TUNING'
+26DA: 20 54 55 4E 49
+26DF: 4E 47
+26E1: 0D                    DEFB	0Dh
+26E2: 00                    DEFB    00h
+                      RM26E3:	P:play
+26E3: AF                    XOR     A			'A=0
+26E4: 21 95 26              LD      HL,2695h	03h,05h,'PLAYING : '
+26E7: C3 EF 26              JP      RM26EF
+                      RM26EA:	O:loop play
+26EA: AF                    XOR     A			'A=0'
+26EB: 2F                    CPL			'A=FFh(CPL=bit反転)
+26EC: 21 A2 26              LD      HL,26A2h	03h,05h,'LOOP PLAY : '
+                      RM26EF:
+26EF: E5                    PUSH    HL
+26F0: 32 39 32              LD      (RM3239),A	00h=PLAY/FFh=LOOP PLAY
+26F3: CD E8 24              CALL    RM24E8	ヘッダー表示
+26F6: E1                    POP     HL
+26F7: CD 10 2F              CALL    RM2F10	CURSOR D,E:PRINT HL(00まで)
+                      RM26FA:
+26FA: CD DC 2C              CALL    RM2CDC 	ソフトバージョン表示
+26FD: 21 35 15              LD      HL,1535h	00h,03h,'PRESS "Q"  KEY TO STOP'
+2700: CD 10 2F              CALL    RM2F10		CURSOR D,E:PRINT HL(00まで)
+                      RM2703:
+2703: CD DF 29              CALL    RM29DF	データ開始位置設定(飛ばすと途中から再生)
+2706: CD 1D 2C              CALL    RM2C1D	8253(1)/(2)の初期設定
+                      RM2709:
+2709: 06 09                 LD      B,09h
+                      RM270B:
+270B: 21 3E 32              LD      HL,323Eh
+                      RM270E:
+270E: 35                    DEC     (HL)
+270F: CC 86 28              CALL    Z,RM2886
+2712: 23                    INC     HL
+2713: 35                    DEC     (HL)
+2714: CC 7D 29              CALL    Z,RM297D
+2717: 11 10 00              LD      DE,0010h
+271A: 19                    ADD     HL,DE
+271B: 10 F1                 DJNZ    RM270E
+271D: 3A 37 32              LD      A,(RM3237)
+2720: FE FF                 CP      FFh
+2722: 20 07                 JR      NZ,RM272B
+2724: 3A 38 32              LD      A,(RM3238)
+2727: A7                    AND     A		'CP0
+2728: C2 C9 27              JP      NZ,RM27C9 	PLAY:終了、LOOP:繰り返し
+                      RM272B:
+272B: CD B1 31              CALL    RM31B1	タイミングをとっている？
+272E: CD 1E 2A              CALL    RM2A1E	音を鳴らしている？
+2731: C3 09 27              JP      RM2709
+                      RM2734:point play
+2734: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+                      RM2737:
+2737: 7E                    LD      A,(HL)
+2738: FE FD                 CP      FDh				FDh,0Ch,06h(measure end)？
+273A: 20 05                 JR      NZ,RM2741
+273C: 23                    INC     HL
+273D: 23                    INC     HL
+273E: 23                    INC     HL
+273F: 18 F6                 JR      RM2737
+                      RM2741:
+2741: D0                    RET     NC
+2742: 3A DB 32              LD      A,(RM32DB)
+2745: A7                    AND     A
+2746: C8                    RET     Z
+2747: FE 09                 CP      09h
+2749: C8                    RET     Z
+274A: 47                    LD      B,A
+274B: 11 11 00              LD      DE,0011h
+274E: 21 2F 32              LD      HL,322Fh		FREE STEPS
+                      RM2751:
+2751: 19                    ADD     HL,DE
+2752: 10 FD                 DJNZ    RM2751
+2754: ED 4B E0 32           LD      BC,(RM32E0)
+2758: 03                    INC     BC
+2759: 03                    INC     BC
+275A: 03                    INC     BC
+275B: D9                    EXX
+275C: 21 B1 26              LD      HL,26B1h	00h,02h,'POINT PLAY ...'
+275F: CD 03 2F              CALL    RM2F03	行をクリアして1行PRINT
+2762: 21 C2 26              LD      HL,26C2h	03h,03h,'JUST A MOMENT !'
+2765: CD 03 2F              CALL    RM2F03	行をクリアして1行PRINT
+2768: AF                    XOR     A		'A=0
+2769: 32 39 32              LD      (RM3239),A	00h=PLAY/FFh=LOOP PLAY
+276C: CD DF 29              CALL    RM29DF
+                      RM276F:
+276F: 06 09                 LD      B,09h
+2771: 21 3E 32              LD      HL,323Eh
+                      RM2774:
+2774: 35                    DEC     (HL)
+2775: CC 86 28              CALL    Z,RM2886
+2778: 23                    INC     HL
+2779: 35                    DEC     (HL)
+277A: CC 7D 29              CALL    Z,RM297D
+277D: 11 10 00              LD      DE,0010h
+2780: 19                    ADD     HL,DE
+2781: 10 F1                 DJNZ    RM2774
+2783: D9                    EXX
+2784: 5E                    LD      E,(HL)
+2785: 23                    INC     HL
+2786: 56                    LD      D,(HL)
+2787: 2B                    DEC     HL
+2788: EB                    EX      DE,HL
+2789: ED 42                 SBC     HL,BC
+278B: EB                    EX      DE,HL
+278C: D9                    EXX
+278D: 38 E0                 JR      C,RM276F
+278F: 21 35 15              LD      HL,1535h	00h,03h,'PRESS "Q"  KEY TO STOP'
+2792: CD 03 2F              CALL    RM2F03		行をクリアして1行PRINT
+2795: CD 1D 2C              CALL    RM2C1D	8253(1)/(2)の初期設定
+2798: C3 2B 27              JP      RM272B
+                      RM279B:tuning
+279B: 21 D4 26              LD      HL,26D4h	'      TUNING'
+279E: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+27A1: 21 35 15              LD      HL,1535h	00h,03h,'PRESS "Q"  KEY TO STOP'
+27A4: CD 10 2F              CALL    RM2F10		CURSOR D,E:PRINT HL(00まで)
+27A7: 21 3B 32              LD      HL,323Bh
+27AA: 06 08                 LD      B,08h
+27AC: 11 0F 00              LD      DE,000Fh
+                      RM27AF:
+27AF: 36 39                 LD      (HL),39h
+27B1: 23                    INC     HL
+27B2: 36 0B                 LD      (HL),0Bh
+27B4: 23                    INC     HL
+27B5: 36 6D                 LD      (HL),6Dh
+27B7: 19                    ADD     HL,DE
+27B8: 10 F5                 DJNZ    RM27AF
+27BA: CD 1D 2C              CALL    RM2C1D	8253(1)/(2)の初期設定
+                      RM27BD:
+27BD: CD 1E 2A              CALL    RM2A1E
+27C0: 21 D5 27              LD      HL,27D5h
+27C3: CD B1 31              CALL    RM31B1
+27C6: C3 BD 27              JP      RM27BD
+                      RM27C9:PLAY終了、LOOP繰り返し
+27C9: 3A 39 32              LD      A,(RM3239)	00h=PLAY/FFh=LOOP PLAY
+27CC: A7                    AND     A		'CP0
+27CD: 28 06                 JR      Z,RM27D5	00h=PLAYならRM27D5へ
+27CF: CD B1 31              CALL    RM31B1
+27D2: C3 03 27              JP      RM2703
+                      RM27D5:
+27D5: CD F5 2B              CALL    RM2BF5	8253設定
+27D8: AF                    XOR     A			'A=0
+27D9: C9                    RET
+                      RM27DA:
+27DA: 3A 2D 32              LD      A,(RM322D)
+27DD: A7                    AND     A
+27DE: C8                    RET     Z
+27DF: 3A DB 32              LD      A,(RM32DB)
+27E2: FE 09                 CP      09h
+27E4: 28 25                 JR      Z,RM280B
+27E6: 2A E0 32              LD      HL,(RM32E0)
+27E9: CD 3E 28              CALL    RM283E
+27EC: CD 86 28              CALL    RM2886
+27EF: 3A 3A 32              LD      A,(RM323A)
+27F2: A7                    AND     A
+27F3: C2 D5 27              JP      NZ,RM27D5
+27F6: 34                    INC     (HL)
+                      RM27F7:
+27F7: 35                    DEC     (HL)
+27F8: CA D5 27              JP      Z,RM27D5
+27FB: 23                    INC     HL
+27FC: 35                    DEC     (HL)
+27FD: CC 7D 29              CALL    Z,RM297D
+2800: 2B                    DEC     HL
+2801: EB                    EX      DE,HL
+2802: CD B1 31              CALL    RM31B1
+                      RM2805:
+2805: CD 1E 2A              CALL    RM2A1E
+2808: EB                    EX      DE,HL
+2809: 18 EC                 JR      RM27F7
+                      RM280B:
+280B: 2A E0 32              LD      HL,(RM32E0)
+280E: CD 2B 28              CALL    RM282B
+                      RM2811:
+2811: 35                    DEC     (HL)
+2812: CC 86 28              CALL    Z,RM2886
+2815: 23                    INC     HL
+2816: 35                    DEC     (HL)
+2817: CC 7D 29              CALL    Z,RM297D
+281A: 2B                    DEC     HL
+281B: 3A 3A 32              LD      A,(RM323A)
+281E: A7                    AND     A
+281F: 20 B4                 JR      NZ,RM27D5
+2821: EB                    EX      DE,HL
+2822: CD B1 31              CALL    RM31B1
+2825: CD 1E 2A              CALL    RM2A1E
+2828: EB                    EX      DE,HL
+2829: 18 E6                 JR      RM2811
+                      RM282B:
+282B: 3A DB 32              LD      A,(RM32DB)
+282E: FE 09                 CP      09h
+2830: CA 68 28              JP      Z,RM2868
+                      RM2833:
+2833: 2B                    DEC     HL
+2834: 2B                    DEC     HL
+2835: 2B                    DEC     HL
+2836: 7E                    LD      A,(HL)
+2837: FE FD                 CP      FDh
+2839: 38 F8                 JR      C,RM2833
+283B: 23                    INC     HL
+283C: 23                    INC     HL
+283D: 23                    INC     HL
+                      RM283E:
+283E: E5                    PUSH    HL
+283F: CD DF 29              CALL    RM29DF
+2842: 21 30 32              LD      HL,3230h
+2845: 11 11 00              LD      DE,0011h
+2848: 3A DB 32              LD      A,(RM32DB)
+284B: A7                    AND     A
+284C: 20 02                 JR      NZ,RM2850
+284E: 3E 09                 LD      A,09h
+                      RM2850:
+2850: 47                    LD      B,A
+2851: ED 44                 NEG
+2853: C6 0A                 ADD     0Ah
+2855: 4F                    LD      C,A
+                      RM2856:
+2856: 19                    ADD     HL,DE
+2857: 10 FD                 DJNZ    RM2856
+2859: 41                    LD      B,C
+285A: D1                    POP     DE
+285B: 72                    LD      (HL),D
+285C: 2B                    DEC     HL
+285D: 73                    LD      (HL),E
+285E: 2B                    DEC     HL
+285F: 2B                    DEC     HL
+2860: AF                    XOR     A			'A=0
+2861: 32 3A 32              LD      (RM323A),A
+2864: CD 1D 2C              CALL    RM2C1D	8253(1)/(2)の初期設定
+2867: C9                    RET
+                      RM2868:
+2868: 46                    LD      B,(HL)
+2869: 21 7D 33              LD      HL,337Dh		データ先頭アドレス
+286C: 11 33 00              LD      DE,0033h
+286F: A7                    AND     A
+2870: ED 52                 SBC     HL,DE
+                      RM2872:
+2872: 19                    ADD     HL,DE
+2873: 10 FD                 DJNZ    RM2872
+2875: EB                    EX      DE,HL
+2876: 2A E4 32              LD      HL,(RM32E4)
+2879: A7                    AND     A
+287A: ED 52                 SBC     HL,DE
+287C: 38 05                 JR      C,RM2883
+287E: EB                    EX      DE,HL
+287F: AF                    XOR     A			'A=0
+2880: C3 3E 28              JP      RM283E
+                      RM2883:
+2883: 33                    INC     SP
+2884: 33                    INC     SP
+2885: C9                    RET
+                      RM2886:
+2886: 23                    INC     HL
+2887: 23                    INC     HL
+2888: 5E                    LD      E,(HL)
+2889: 23                    INC     HL
+288A: 56                    LD      D,(HL)
+                      RM288B:
+288B: 2B                    DEC     HL
+288C: 2B                    DEC     HL
+288D: 2B                    DEC     HL
+                      RM288E:
+288E: 1A                    LD      A,(DE)
+288F: FE FD                 CP      FDh
+2891: 38 11                 JR      C,RM28A4
+2893: 32 3A 32              LD      (RM323A),A
+2896: C2 C8 29              JP      NZ,RM29C8
+2899: 78                    LD      A,B
+289A: 3D                    DEC     A
+289B: CA 86 29              JP      Z,RM2986
+289E: 13                    INC     DE
+                      RM289F:
+289F: 13                    INC     DE
+28A0: 13                    INC     DE
+28A1: C3 8E 28              JP      RM288E
+                      RM28A4:
+28A4: FE FB                 CP      FBh
+28A6: CA 26 29              JP      Z,RM2926
+28A9: FE FC                 CP      FCh
+28AB: CA 59 29              JP      Z,RM2959
+28AE: 2B                    DEC     HL
+28AF: E6 7F                 AND     7Fh
+28B1: 77                    LD      (HL),A
+28B2: 13                    INC     DE
+28B3: 1A                    LD      A,(DE)
+28B4: A7                    AND     A
+28B5: 20 03                 JR      NZ,RM28BA
+28B7: 23                    INC     HL
+28B8: 18 E5                 JR      RM289F
+                      RM28BA:
+28BA: 78                    LD      A,B
+28BB: 3D                    DEC     A
+28BC: 28 57                 JR      Z,RM2915
+28BE: 4E                    LD      C,(HL)
+28BF: 3A 26 32              LD      A,(RM3226)
+28C2: A7                    AND     A
+28C3: FA D1 28              JP      M,RM28D1
+28C6: 81                    ADD     C
+                      RM28C7:
+28C7: 4F                    LD      C,A
+28C8: FE 71                 CP      71h
+28CA: 38 0F                 JR      C,RM28DB
+28CC: D6 0C                 SUB     0Ch
+28CE: C3 C7 28              JP      RM28C7
+                      RM28D1:
+28D1: 81                    ADD     C
+                      RM28D2:
+28D2: 4F                    LD      C,A
+28D3: F2 DB 28              JP      P,RM28DB
+28D6: C6 0C                 ADD     0Ch
+28D8: C3 D2 28              JP      RM28D2
+                      RM28DB:
+28DB: D5                    PUSH    DE
+28DC: E5                    PUSH    HL
+28DD: 21 00 2B              LD      HL,2B00h
+28E0: 16 00                 LD      D,00h
+28E2: 59                    LD      E,C
+28E3: 19                    ADD     HL,DE
+28E4: 19                    ADD     HL,DE
+28E5: 5E                    LD      E,(HL)
+28E6: 23                    INC     HL
+28E7: 56                    LD      D,(HL)
+28E8: E1                    POP     HL
+28E9: 2B                    DEC     HL
+28EA: 72                    LD      (HL),D
+28EB: 2B                    DEC     HL
+28EC: 73                    LD      (HL),E
+28ED: 23                    INC     HL
+28EE: 23                    INC     HL
+28EF: D1                    POP     DE
+28F0: 3A 27 32              LD      A,(RM3227)
+28F3: 4F                    LD      C,A
+28F4: 3A 26 32              LD      A,(RM3226)
+28F7: 81                    ADD     C
+28F8: 4E                    LD      C,(HL)
+28F9: FA 07 29              JP      M,RM2907
+28FC: 81                    ADD     C
+                      RM28FD:
+28FD: 4F                    LD      C,A
+28FE: FE 40                 CP      40h
+2900: 38 12                 JR      C,RM2914
+2902: D6 0C                 SUB     0Ch
+2904: C3 FD 28              JP      RM28FD
+                      RM2907:
+2907: 81                    ADD     C
+2908: F2 FD 28              JP      P,RM28FD
+                      RM290B:
+290B: 4F                    LD      C,A
+290C: F2 14 29              JP      P,RM2914
+290F: C6 0C                 ADD     0Ch
+2911: C3 0B 29              JP      RM290B
+                      RM2914:
+2914: 71                    LD      (HL),C
+                      RM2915:
+2915: 23                    INC     HL
+2916: 1A                    LD      A,(DE)
+2917: 77                    LD      (HL),A
+2918: 23                    INC     HL
+2919: 13                    INC     DE
+291A: 1A                    LD      A,(DE)
+291B: 3C                    INC     A
+291C: 77                    LD      (HL),A
+291D: 13                    INC     DE
+291E: 23                    INC     HL
+291F: 73                    LD      (HL),E
+2920: 23                    INC     HL
+2921: 72                    LD      (HL),D
+2922: 2B                    DEC     HL
+2923: 2B                    DEC     HL
+2924: 2B                    DEC     HL
+2925: C9                    RET
+                      RM2926:
+2926: E5                    PUSH    HL
+2927: D5                    PUSH    DE
+2928: 13                    INC     DE
+2929: 1A                    LD      A,(DE)
+292A: 11 04 00              LD      DE,0004h
+292D: 19                    ADD     HL,DE
+292E: 5E                    LD      E,(HL)
+292F: 1D                    DEC     E
+2930: 28 1E                 JR      Z,RM2950
+2932: 1C                    INC     E
+2933: E5                    PUSH    HL
+2934: A7                    AND     A
+2935: CA 4C 29              JP      Z,RM294C
+2938: 16 00                 LD      D,00h
+293A: 19                    ADD     HL,DE
+293B: 2B                    DEC     HL
+293C: 34                    INC     (HL)
+293D: BE                    CP      (HL)
+293E: CA 4C 29              JP      Z,RM294C
+2941: D1                    POP     DE
+2942: D1                    POP     DE
+2943: 2B                    DEC     HL
+2944: 56                    LD      D,(HL)
+2945: 2B                    DEC     HL
+2946: 5E                    LD      E,(HL)
+2947: 1A                    LD      A,(DE)
+2948: E1                    POP     HL
+2949: C3 72 29              JP      RM2972
+                      RM294C:
+294C: E1                    POP     HL
+294D: 35                    DEC     (HL)
+294E: 35                    DEC     (HL)
+294F: 35                    DEC     (HL)
+                      RM2950:
+2950: D1                    POP     DE
+2951: 13                    INC     DE
+2952: 13                    INC     DE
+2953: 13                    INC     DE
+2954: 1A                    LD      A,(DE)
+2955: E1                    POP     HL
+2956: C3 72 29              JP      RM2972
+                      RM2959:
+2959: E5                    PUSH    HL
+295A: 13                    INC     DE
+295B: 13                    INC     DE
+295C: 13                    INC     DE
+295D: D5                    PUSH    DE
+295E: 11 04 00              LD      DE,0004h
+2961: 19                    ADD     HL,DE
+2962: 5E                    LD      E,(HL)
+2963: 16 00                 LD      D,00h
+2965: 34                    INC     (HL)
+2966: 34                    INC     (HL)
+2967: 34                    INC     (HL)
+2968: 19                    ADD     HL,DE
+2969: D1                    POP     DE
+296A: 73                    LD      (HL),E
+296B: 23                    INC     HL
+296C: 72                    LD      (HL),D
+296D: 23                    INC     HL
+296E: 36 00                 LD      (HL),00h
+2970: 1A                    LD      A,(DE)
+2971: E1                    POP     HL
+                      RM2972:
+2972: 23                    INC     HL
+2973: 23                    INC     HL
+2974: 73                    LD      (HL),E
+2975: 23                    INC     HL
+2976: 72                    LD      (HL),D
+2977: 2B                    DEC     HL
+2978: 2B                    DEC     HL
+2979: 2B                    DEC     HL
+297A: C3 8E 28              JP      RM288E
+                      RM297D:
+297D: 2B                    DEC     HL
+297E: 2B                    DEC     HL
+297F: 7E                    LD      A,(HL)
+2980: F6 80                 OR      80h
+2982: 77                    LD      (HL),A
+2983: 23                    INC     HL
+2984: 23                    INC     HL
+2985: C9                    RET
+                      RM2986:
+2986: 2B                    DEC     HL
+2987: 2B                    DEC     HL
+2988: 56                    LD      D,(HL)
+2989: 2B                    DEC     HL
+298A: 5E                    LD      E,(HL)
+298B: 13                    INC     DE
+298C: 13                    INC     DE
+298D: 13                    INC     DE
+298E: 73                    LD      (HL),E
+298F: 23                    INC     HL
+2990: 72                    LD      (HL),D
+2991: 23                    INC     HL
+2992: 23                    INC     HL
+2993: E5                    PUSH    HL
+2994: 1A                    LD      A,(DE)
+2995: FE FE                 CP      FEh
+2997: CA BC 29              JP      Z,RM29BC
+299A: 47                    LD      B,A
+299B: 21 7D 33              LD      HL,337Dh		データ先頭アドレス
+299E: 11 33 00              LD      DE,0033h
+29A1: A7                    AND     A
+29A2: ED 52                 SBC     HL,DE
+                      RM29A4:
+29A4: 19                    ADD     HL,DE
+29A5: 10 FD                 DJNZ    RM29A4
+29A7: 06 01                 LD      B,01h
+29A9: EB                    EX      DE,HL
+29AA: 2A E4 32              LD      HL,(RM32E4)
+29AD: A7                    AND     A
+29AE: ED 52                 SBC     HL,DE
+29B0: DA BC 29              JP      C,RM29BC
+29B3: E1                    POP     HL
+29B4: 23                    INC     HL
+29B5: 23                    INC     HL
+29B6: 73                    LD      (HL),E
+29B7: 23                    INC     HL
+29B8: 72                    LD      (HL),D
+29B9: C3 8B 28              JP      RM288B
+                      RM29BC:
+29BC: E1                    POP     HL
+29BD: 1B                    DEC     DE
+29BE: 1B                    DEC     DE
+29BF: 1B                    DEC     DE
+29C0: 2B                    DEC     HL
+29C1: 2B                    DEC     HL
+29C2: 72                    LD      (HL),D
+29C3: 2B                    DEC     HL
+29C4: 73                    LD      (HL),E
+29C5: 23                    INC     HL
+29C6: 23                    INC     HL
+29C7: 23                    INC     HL
+                      RM29C8:
+29C8: AF                    XOR     A			'A=0
+29C9: 37                    SCF
+29CA: C5                    PUSH    BC
+                      RM29CB:
+29CB: 17                    RLA
+29CC: 10 FD                 DJNZ    RM29CB
+29CE: 30 05                 JR      NC,RM29D5
+29D0: 2F                    CPL				Aの値を反転
+29D1: 32 38 32              LD      (RM3238),A
+29D4: 2F                    CPL				Aの値を反転
+                      RM29D5:
+29D5: 47                    LD      B,A
+29D6: 3A 37 32              LD      A,(RM3237)
+29D9: B0                    OR      B
+29DA: 32 37 32              LD      (RM3237),A
+29DD: C1                    POP     BC
+29DE: C9                    RET
+                      RM29DF: 	データ開始位置設定
+29DF: AF                    XOR     A			'A=0
+29E0: 32 37 32              LD      (RM3237),A
+29E3: 32 38 32              LD      (RM3238),A
+29E6: 06 09                 LD      B,09h
+29E8: 21 32 32              LD      HL,3232h
+29EB: 11 E4 32              LD      DE,32E4h 	1CH先頭アドレス格納
+                      RM29EE:
+29EE: D5                    PUSH    DE 	(xCH先頭アドレス格納)PUSH
+29EF: 11 09 00              LD      DE,0009h
+29F2: 19                    ADD     HL,DE
+29F3: D1                    POP     DE 	(xCH先頭アドレス格納)POP
+29F4: 36 01                 LD      (HL),01h
+29F6: 23                    INC     HL
+29F7: 36 00                 LD      (HL),00h
+29F9: 23                    INC     HL
+29FA: 36 80                 LD      (HL),80h
+29FC: 23                    INC     HL
+29FD: 36 01                 LD      (HL),01h
+29FF: 23                    INC     HL
+2A00: 23                    INC     HL
+2A01: 1A                    LD      A,(DE)
+2A02: 77                    LD      (HL),A
+2A03: 23                    INC     HL
+2A04: 13                    INC     DE
+2A05: 1A                    LD      A,(DE)
+2A06: 77                    LD      (HL),A
+2A07: 23                    INC     HL
+2A08: 13                    INC     DE
+2A09: 36 01                 LD      (HL),01h
+2A0B: 23                    INC     HL
+2A0C: 10 E0                 DJNZ    RM29EE
+2A0E: 2A F4 32              LD      HL,(RM32F4)
+2A11: 2B                    DEC     HL
+2A12: 2B                    DEC     HL
+2A13: 2B                    DEC     HL
+2A14: 22 C3 32              LD      (RM32C3),HL
+2A17: 21 7A 33              LD      HL,337Ah
+2A1A: 22 C8 32              LD      (RM32C8),HL
+2A1D: C9                    RET
+                      RM2A1E:
+2A1E: E5                    PUSH    HL
+2A1F: C5                    PUSH    BC
+2A20: D5                    PUSH    DE
+2A21: 06 04                 LD      B,04h
+                      RM2A23:
+2A23: C5                    PUSH    BC
+2A24: DD 21 3B 32           LD      IX,323Bh
+2A28: 21 F8 2A              LD      HL,2AF8h	90h		CH1の音階設定
+2A2B: 11 11 00              LD      DE,0011h
+2A2E: 06 01                 LD      B,01h
+                      RM2A30:
+2A30: DD 7E 02              LD      A,(IX+02h)
+2A33: D3 98                 !OUT     (98h),A
+2A35: 78                    LD      A,B
+2A36: D3 9A                 !OUT     (9Ah),A
+		bit0	1 → 0 になった時に bit1-3 のチャンネルの設定を反映。反映後は 1 に戻さないといけない
+		bit1-3	設定するチャンネル (0 ～ 7)
+2A38: 3D                    DEC     A
+2A39: D3 9A                 !OUT     (9Ah),A
+2A3B: 4E                    LD      C,(HL)		CHxの音階設定
+2A3C: DD 7E 00              LD      A,(IX+00h)	CHx発音数下位設定
+2A3F: ED 79                 !OUT     (C),A
+2A41: DD 7E 01              LD      A,(IX+01h)	CHx発音数上位設定
+2A44: ED 79                 !OUT     (C),A
+2A46: DD 19                 ADD     IX,DE
+2A48: 23                    INC     HL
+2A49: 78                    LD      A,B
+2A4A: D3 9A                 !OUT     (9Ah),A
+2A4C: 04                    INC     B
+2A4D: 04                    INC     B
+2A4E: FE 0F                 CP      0Fh
+2A50: C2 30 2A              JP      NZ,RM2A30
+2A53: DD 7E 02              LD      A,(IX+02h)
+2A56: A7                    AND     A
+2A57: F2 5C 2A              JP      P,RM2A5C
+2A5A: 3E 7F                 LD      A,7Fh
+                      RM2A5C:
+2A5C: 17                    RLA
+2A5D: D3 99                 !OUT     (99h),A
+2A5F: C1                    POP     BC
+2A60: 10 C1                 DJNZ    RM2A23
+2A62: D1                    POP     DE
+2A63: C1                    POP     BC
+2A64: E1                    POP     HL
+2A65: C9                    RET
+                      RM2A66:
+2A66: 21 B3 2A              LD      HL,2AB3h	'CHANGE PLAY BIAS ...'
+2A69: 3A 26 32              LD      A,(RM3226)
+2A6C: CD 82 2A              CALL    RM2A82
+2A6F: 32 26 32              LD      (RM3226),A
+2A72: AF                    XOR     A			'A=0
+2A73: C9                    RET
+                      RM2A74:
+2A74: 21 C9 2A              LD      HL,2AC9h	'CHANGE CV BIAS ...'
+2A77: 3A 27 32              LD      A,(RM3227)
+2A7A: CD 82 2A              CALL    RM2A82
+2A7D: 32 27 32              LD      (RM3227),A
+2A80: AF                    XOR     A			'A=0
+2A81: C9                    RET
+                      RM2A82:
+2A82: 32 24 32              LD      (RM3224),A
+2A85: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+2A88: 21 DD 2A              LD      HL,2ADDh	03h,02h,'OLD BIAS = '
+2A8B: CD 10 2F              CALL    RM2F10		CURSOR D,E:PRINT HL(00まで)
+2A8E: 3A 24 32              LD      A,(RM3224)
+2A91: FE 80                 CP      80h
+2A93: 38 0C                 JR      C,RM2AA1
+2A95: F5                    PUSH    AF
+2A96: CD AC 31              CALL    RM31AC
+2A99: 3E 2D                 LD      A,2Dh
+2A9B: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+2A9E: F1                    POP     AF
+2A9F: ED 44                 NEG
+                      RM2AA1:
+2AA1: E6 7F                 AND     7Fh
+2AA3: CD 90 2F              CALL    RM2F90
+2AA6: 21 EB 2A              LD      HL,2AEBh	'   INPUT NEW'
+2AA9: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+2AAC: CD 73 22              CALL    RM2273
+2AAF: 3A 24 32              LD      A,(RM3224)
+2AB2: C9                    RET
+2AB3: 06
+2AB4: 43 48 41 4E 47        DEFM	'CHANGE PLAY BIAS ...'
+2AB9: 45 20 50 4C 41
+2ABE: 59 20 42 49 41
+2AC3: 53 20 2E 2E 2E
+2AC8: 00                    DEFB    00h
+2AC9: 06
+2ACA: 43 48 41 4E 47        DEFM	'CHANGE CV BIAS ...'
+2ACF: 45 20 43 56 20
+2AD4: 42 49 41 53 20
+2AD9: 2E 2E 2E
+2ADC: 00                    DEFB    00h
+2ADD: 03 02                 DEFB    03h,02h		CURSOR 02h,03h
+2ADF: 4F 4C 44 20 42        DEFM	'OLD BIAS = '
+2AE4: 49 41 53 20 3D
+2AE9: 20
+2AEA: 00                    NOP
+2AEB: 20 20 20 49 4E        DEFM	'   INPUT NEW'
+2AF0: 50 55 54 20 4E
+2AF5: 45 57
+2AF7: 00                    NOP
+                      RM2AF8:
+2AF8: 90                    DEFM    90h		CH1の音階設定
+2AF9: 91                    DEFM    91h		CH2の音階設定
+2AFA: 92                    DEFM    92h		CH3の音階設定
+2AFB: 94                    DEFM    94h		CH4の音階設定
+2AFC: 95                    DEFM    95h		CH5の音階設定
+2AFD: 96                    DEFM    96h		CH6の音階設定
+2AFE: 9C                    SBC     H
+2AFF: 9C                    SBC     H
+                      RM2B00: '8253の設定テーブル
+2B00: 41 97                 DEFB	41 97h	C0
+2B02: BE 8E                 DEFB	BE 8Eh
+2B04: BB 86                 DEFB	BB 86h
+2B06: 2E 7F                 DEFB	2E 7Fh
+2B08: 0B 78                 DEFB	0B 78h
+2B0A: 4E 71                 DEFB	4E 71h
+2B0C: ED 6A                 DEFB	ED 6Ah
+2B0E: EC 64                 DEFB	EC 64h
+2B10: 41 5F                 DEFB	41 5Fh
+2B12: E8 59                 DEFB	E8 59h
+2B14: D9 54                 DEFB	D9 54h
+2B16: 15 50                 DEFB	15 50h
+2B18: 95 4B                 DEFB	95 4Bh	C1
+2B1A: 54 47                 DEFB	54 47h
+2B1C: 53 43                 DEFB	53 43h
+2B1E: 8D 3F                 DEFB	8D 3Fh
+2B20: FC 3B                 DEFB	FC 3Bh
+2B22: 9E 38                 DEFB	9E 38h
+2B24: 6E 35                 DEFB	6E 35h
+2B26: 6E 32                 DEFB	6E 32h
+2B28: 99 2F                 DEFB	99 2Fh
+2B2A: ED 2C                 DEFB	ED 2Ch
+2B2C: 66 2A                 DEFB	66 2Ah
+2B2E: 05 28                 DEFB	05 28h
+2B30: C5 25                 DEFB	C5 25h	C2
+2B32: A5 23                 DEFB	A5 23h
+2B34: A5 21                 DEFB	A5 21h
+2B36: C3 1F                 DEFB	C3 1Fh
+2B38: FB 1D                 DEFB	FB 1Dh
+2B3A: 4C 1C                 DEFB	4C 1Ch
+2B3C: B4 1A                 DEFB	B4 1Ah
+2B3E: 34 19                 DEFB	34 19h
+2B40: CA 17                 DEFB	CA 17h
+2B42: 74 16                 DEFB	74 16h
+2B44: 31 15                 DEFB	31 15h
+2B46: 01 14                 DEFB	01 14h
+2B48: E1 12                 DEFB	E1 12h	C3
+2B4A: D1 11                 DEFB	D1 11h
+2B4C: D1 10                 DEFB	D1 10h
+2B4E: E1 0F                 DEFB	E1 0Fh
+2B50: FD 0E                 DEFB	FD 0Eh
+2B52: 25 0E                 DEFB	25 0Eh
+2B54: 59 0D                 DEFB	59 0Dh
+2B56: 99 0C                 DEFB	99 0Ch
+2B58: E4 0B                 DEFB	E4 0Bh
+2B5A: 39 0B                 DEFB	39 0Bh
+2B5C: 98 0A                 DEFB	98 0Ah
+2B5E: 00 0A                 DEFB	00 0Ah
+2B60: 70 09                 DEFB	70 09h	C4
+2B62: E8 08                 DEFB	E8 08h
+2B64: 68 08                 DEFB	68 08h
+2B66: F0 07                 DEFB	F0 07h
+2B68: 7E 07                 DEFB	7E 07h
+2B6A: 12 07                 DEFB	12 07h
+2B6C: AC 06                 DEFB	AC 06h
+2B6E: 4C 06                 DEFB	4C 06h
+2B70: F2 05                 DEFB	F2 05h
+2B72: 9C 05                 DEFB	9C 05h
+2B74: 4C 05                 DEFB	4C 05h
+2B76: 00 05                 DEFB	00 05h
+2B78: B8 04                 DEFB	B8 04h	C5
+2B7A: 74 04                 DEFB	74 04h
+2B7C: 34 04                 DEFB	34 04h
+2B7E: F8 03                 DEFB	F8 03h
+2B80: BF 03                 DEFB	BF 03h
+2B82: 89 03                 DEFB	89 03h
+2B84: 56 03                 DEFB	56 03h
+2B86: 26 03                 DEFB	26 03h
+2B88: F9 02                 DEFB	F9 02h
+2B8A: CE 02                 DEFB	CE 02h
+2B8C: A6 02                 DEFB	A6 02h
+2B8E: 80 02                 DEFB	80 02h
+2B90: 5C 02                 DEFB	5C 02h	C6
+2B92: 3A 02                 DEFB	3A 02h
+2B94: 1A 02                 DEFB	1A 02h
+2B96: FC 01                 DEFB	FC 01h
+2B98: DF 01                 DEFB	DF 01h
+2B9A: C4 01                 DEFB	C4 01h
+2B9C: AB 01                 DEFB	AB 01h
+2B9E: 93 01                 DEFB	93 01h
+2BA0: 7C 01                 DEFB	7C 01h
+2BA2: 67 01                 DEFB	67 01h
+2BA4: 53 01                 DEFB	53 01h
+2BA6: 40 01                 DEFB	40 01h
+2BA8: 2E 01                 DEFB	2E 01h	C7
+2BAA: 1D 01                 DEFB	1D 01h
+2BAC: 0D 01                 DEFB	0D 01h
+2BAE: FE 00                 DEFB	FE 00h
+2BB0: F0 00                 DEFB	F0 00h
+2BB2: E2 00                 DEFB	E2 00h
+2BB4: D5 00                 DEFB	D5 00h
+2BB6: C9 00                 DEFB	C9 00h
+2BB8: BE 00                 DEFB	BE 00h
+2BBA: B3 00                 DEFB	B3 00h
+2BBC: A9 00                 DEFB	A9 00h
+2BBE: A0 00                 DEFB	A0 00h
+2BC0: 97 00                 DEFB	97 00h	C8
+2BC2: 8E 00                 DEFB	8E 00h
+2BC4: 86 00                 DEFB	86 00h
+2BC6: 7F 00                 DEFB	7F 00h
+2BC8: 78 00                 DEFB	78 00h
+2BCA: 71 00                 DEFB	71 00h
+2BCC: 6A 00                 DEFB	6A 00h
+2BCE: 64 00                 DEFB	64 00h
+2BD0: 5F 00                 DEFB	5F 00h
+2BD2: 59 00                 DEFB	59 00h
+2BD4: 54 00                 DEFB	54 00h
+2BD6: 50 00                 DEFB	50 00h
+2BD8: 4B 00                 DEFB	4B 00h	C9
+2BDA: 47 00                 DEFB	47 00h
+2BDC: 43 00                 DEFB	43 00h
+2BDE: 3F 00                 DEFB	3F 00h
+2BE0: 3C 00                 DEFB	3C 00h
+                      RM2BE2: 'CMU-800本体初期設定
+2BE2: 3A 66 EA              LD      A,(RMEA66)
+2BE5: E6 F7                 AND     F7h
+2BE7: 32 66 EA              LD      (RMEA66),A
+2BEA: D3 30                 !OUT     (30h),A
+2BEC: 3E 88                 LD      A,88h
+2BEE: 06 FF                 LD      B,FFh
+2BF0: D3 9B                 !OUT     (9Bh),A '8255 コントロールワード
+2BF2: 78                    LD      A,B
+2BF3: D3 99                 !OUT     (99h),A 'ドラム出力(0で発音)
+                      RM2BF5:
+2BF5: 3E 30                 LD      A,30h
+2BF7: D3 93                 !OUT     (93h),A '8253 (1) コントロールワード
+2BF9: 3E 70                 LD      A,70h
+2BFB: D3 93                 !OUT     (93h),A '8253 (1) コントロールワード
+2BFD: 3E B0                 LD      A,B0h
+2BFF: D3 93                 !OUT     (93h),A '8253 (1) コントロールワード
+2C01: 3E 30                 LD      A,30h
+2C03: D3 97                 !OUT     (97h),A '8253 (2) コントロールワード
+2C05: 3E 70                 LD      A,70h
+2C07: D3 97                 !OUT     (97h),A '8253 (2) コントロールワード
+2C09: 3E B0                 LD      A,B0h
+2C0B: D3 97                 !OUT     (97h),A '8253 (2) コントロールワード
+2C0D: 21 3D 32              LD      HL,323Dh
+2C10: 06 09                 LD      B,09h
+2C12: 11 11 00              LD      DE,0011h
+                      RM2C15:
+2C15: 36 80                 LD      (HL),80h
+2C17: 19                    ADD     HL,DE
+2C18: 10 FB                 DJNZ    RM2C15
+2C1A: C3 1E 2A              JP      RM2A1E
+                      RM2C1D:
+2C1D: 3E 36                 LD      A,36h
+2C1F: D3 93                 !OUT     (93h),A '8253 (1) コントロールワード
+2C21: 3E 76                 LD      A,76h
+2C23: D3 93                 !OUT     (93h),A '8253 (1) コントロールワード
+2C25: 3E B6                 LD      A,B6h
+2C27: D3 93                 !OUT     (93h),A '8253 (1) コントロールワード
+2C29: 3E 36                 LD      A,36h
+2C2B: D3 97                 !OUT     (97h),A '8253 (2) コントロールワード
+2C2D: 3E 76                 LD      A,76h
+2C2F: D3 97                 !OUT     (97h),A '8253 (2) コントロールワード
+2C31: 3E B6                 LD      A,B6h
+2C33: D3 97                 !OUT     (97h),A '8253 (2) コントロールワード
+2C35: C9                    RET
+                      RM2C36:
+2C36: 21 96 2D              LD      HL,2D96h	'SAVE TO CASSETTE'
+2C39: CD 31 2D              CALL    RM2D31	ファイル名入力
+2C3C: 21 08 32              LD      HL,3208h
+2C3F: 11 41 11              LD      DE,1141h	音楽ファイル名格納アドレス
+2C42: 01 0F 00              LD      BC,000Fh
+2C45: ED B0                 LDIR
+2C47: 3E C8                 LD      A,C8h
+2C49: 32 40 11              LD      (RM1140),A
+2C4C: 11 7D 33              LD      DE,337Dh		データ先頭アドレス
+2C4F: ED 53 54 11           LD      (RM1154),DE
+                      RM2C53:
+2C53: 2A F6 32              LD      HL,(RM32F6)
+2C56: A7                    AND     A
+2C57: ED 52                 SBC     HL,DE
+2C59: 22 52 11              LD      (RM1152),HL
+2C5C: CD 51 02              CALL    RM0251
+2C5F: CD 82 02              CALL    RM0282
+2C62: CD 0B 2D              CALL    RM2D0B
+2C65: C3 1A 13              JP      RM131A		HOT START
+                      RM2C68:
+2C68: 21 BE 2D              LD      HL,2DBEh	'VERIFY WITH CASSETTE'
+2C6B: 3E FF                 LD      A,FFh
+2C6D: 18 04                 JR      RM2C73
+                      RM2C6F: LOAD FROM CASSETTE
+2C6F: 21 A9 2D              LD      HL,2DA9h	'LOAD FROM CASSETTE'
+2C72: AF                    XOR     A			'A=0
+                      RM2C73:
+2C73: 32 2E 32              LD      (RM322E),A
+2C76: CD 31 2D              CALL    RM2D31	ファイル名入力
+                      RM2C79:
+2C79: CD 8E 02              CALL    RM028E	ヘッダー(第1ブロック)をテープからロード
+2C7C: DA E7 2C              JP      C,RM2CE7	'TAPE READ ERROR'
+2C7F: CD 2E 0A              CALL    RM0A2E
+2C82: 21 08 32              LD      HL,3208h
+2C85: 11 41 11              LD      DE,1141h	音楽ファイル名格納アドレス
+2C88: 7E                    LD      A,(HL)
+2C89: FE 0D                 CP      0Dh
+2C8B: 28 0A                 JR      Z,RM2C97
+2C8D: 06 0F                 LD      B,0Fh
+                      RM2C8F:
+2C8F: 1A                    LD      A,(DE)
+2C90: BE                    CP      (HL)
+2C91: 23                    INC     HL
+2C92: 13                    INC     DE
+2C93: 20 2F                 JR      NZ,RM2CC4
+2C95: 10 F8                 DJNZ    RM2C8F
+                      RM2C97:
+2C97: 3A 40 11              LD      A,(RM1140)
+2C9A: FE C8                 CP      C8h
+2C9C: 20 26                 JR      NZ,RM2CC4
+2C9E: 21 D5 2D              LD      HL,2DD5h	'FOUND : '
+2CA1: CD D9 2C              CALL    RM2CD9
+2CA4: 21 7D 33              LD      HL,337Dh	データ先頭アドレス
+2CA7: 22 54 11              LD      (RM1154),HL
+2CAA: 3A 2E 32              LD      A,(RM322E)
+2CAD: A7                    AND     A		'CP0
+2CAE: 20 0F                 JR      NZ,RM2CBF
+2CB0: CD B2 02              CALL    RM02B2	本体(第2ブロック)をテープからロード
+                      RM2CB3:
+2CB3: DA E7 2C              JP      C,RM2CE7	'TAPE READ ERROR'
+2CB6: CD 7E 1B              CALL    RM1B7E
+2CB9: CD 0B 2D              CALL    RM2D0B
+2CBC: C3 1A 13              JP      RM131A	HOT START
+                      RM2CBF:
+2CBF: CD BE 02              CALL    RM02BE	カセットメモリの内容を比べる。CY=1なら違っている
+2CC2: 18 EF                 JR      RM2CB3
+                      RM2CC4:
+2CC4: 21 DF 2D              LD      HL,2DDFh
+2CC7: CD D9 2C              CALL    RM2CD9
+2CCA: CD B1 04              CALL    RM04B1
+2CCD: CD CE 04              CALL    RM04CE
+2CD0: DA E7 2C              JP      C,RM2CE7	'TAPE READ ERROR'
+2CD3: CD 11 05              CALL    RM0511
+2CD6: C3 79 2C              JP      RM2C79
+                      RM2CD9:
+2CD9: CD 17 2F              CALL    RM2F17		"00"になるまで１文字プリントを繰り返す
+                      RM2CDC: 	ソフトバージョン表示
+2CDC: 21 50 11              LD      HL,1150h
+2CDF: 36 00                 LD      (HL),00h
+2CE1: 21 41 11              LD      HL,1141h	音楽ファイル名格納アドレス
+2CE4: C3 17 2F              JP      RM2F17	"00"になるまで１文字プリントを繰り返す
+                      RM2CE7: 	'TAPE READ ERROR'
+2CE7: 3A 2E 32              LD      A,(RM322E)
+2CEA: A7                    AND     A 		'CP0
+2CEB: CC 62 1B              CALL    Z,RM1B62
+2CEE: CD 98 31              CALL    RM3198
+2CF1: CD E8 24              CALL    RM24E8	ヘッダー表示
+2CF4: 21 06 2E              LD      HL,2E06h	'TAPE READ ERROR'
+2CF7: 11 16 02              LD      DE,0216h	CURSOR 02h,16h(22)
+2CFA: CD 14 2F              CALL    RM2F14		CURSOR D,E:PRINT HL(00まで)
+2CFD: CD 14 0F              CALL    RM0F14		ベルを鳴らす(ラ：440Hz)
+2D00: CD 0B 2D              CALL    RM2D0B
+2D03: C3 26 13              JP      RM1326
+                      RM2D06:
+2D06: 21 27 2D              LD      HL,2D27h
+2D09: 18 03                 JR      RM2D0E
+                      RM2D0B:
+2D0B: 21 2C 2D              LD      HL,2D2Ch
+                      RM2D0E:
+2D0E: 7E                    LD      A,(HL)
+2D0F: 32 24 05              LD      (RM0524),A
+2D12: 23                    INC     HL
+2D13: 7E                    LD      A,(HL)
+2D14: 32 30 05              LD      (RM0530),A
+2D17: 23                    INC     HL
+2D18: 7E                    LD      A,(HL)
+2D19: 32 3F 05              LD      (RM053F),A
+2D1C: 23                    INC     HL
+2D1D: 7E                    LD      A,(HL)
+2D1E: 32 4B 05              LD      (RM054B),A
+2D21: 23                    INC     HL
+2D22: 7E                    LD      A,(HL)
+2D23: 32 57 05              LD      (RM0557),A
+2D26: C9                    RET
+2D27: 3F                    CCF
+2D28: 3A 81 7C              LD      A,(RM7C81)
+2D2B: 66                    LD      H,(HL)
+2D2C: 2A 25 5A              LD      HL,(RM5A25)
+2D2F: 55                    LD      D,L
+2D30: 41                    LD      B,C
+                      RM2D31: 	ファイル名入力
+2D31: CD 17 2F              CALL    RM2F17	"00"になるまで１文字プリントを繰り返す
+2D34: 21 F8 2D              LD      HL,2DF8h	'FILENAME ? '
+2D37: CD 17 2F              CALL    RM2F17	"00"になるまで１文字プリントを繰り返す
+2D3A: 06 10                 LD      B,10h
+2D3C: 21 08 32              LD      HL,3208h
+2D3F: CD 3F 31              CALL    RM313F	INPUT
+2D42: FE 02                 CP      02h
+2D44: 20 03                 JR      NZ,RM2D49
+2D46: C3 16 2E              JP      RM2E16
+                      RM2D49:
+2D49: FE 82                 CP      82h
+2D4B: 20 0F                 JR      NZ,RM2D5C
+2D4D: CD 06 2D              CALL    RM2D06
+                      RM2D50:
+2D50: 21 E9 2D              LD      HL,2DE9h	16h,01h,'K/C,1200 TAPE'
+2D53: CD 10 2F              CALL    RM2F10	CURSOR D,E:PRINT HL(00まで)
+2D56: 21 08 32              LD      HL,3208h
+                      RM2D59:
+2D59: CD 3F 31              CALL    RM313F	INPUT
+                      RM2D5C:
+2D5C: FE 07                 CP      07h
+2D5E: 28 19                 JR      Z,RM2D79
+2D60: FE 04                 CP      04h
+2D62: 28 15                 JR      Z,RM2D79
+2D64: FE 51                 CP      51h
+2D66: CA 1A 13              JP      Z,RM131A	HOT START
+2D69: FE 0D                 CP      0Dh
+2D6B: 28 1E                 JR      Z,RM2D8B
+2D6D: FE 20                 CP      20h
+2D6F: FA 59 2D              JP      M,RM2D59
+2D72: 77                    LD      (HL),A
+2D73: 23                    INC     HL
+2D74: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+2D77: 10 E0                 DJNZ    RM2D59
+                      RM2D79:
+2D79: 78                    LD      A,B
+2D7A: FE 10                 CP      10h
+2D7C: 28 DB                 JR      Z,RM2D59
+2D7E: CD AC 31              CALL    RM31AC
+2D81: CD 3F 2F              CALL    RM2F3F
+2D84: CD AC 31              CALL    RM31AC
+2D87: 2B                    DEC     HL
+2D88: 04                    INC     B
+2D89: 18 CE                 JR      RM2D59
+                      RM2D8B:
+2D8B: 77                    LD      (HL),A
+2D8C: 23                    INC     HL
+2D8D: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+                      RM2D90: 	レジスタBの数だけ繰り返し
+2D90: 36 00                 LD      (HL),00h
+2D92: 23                    INC     HL
+2D93: 10 FB                 DJNZ    RM2D90
+2D95: C9                    RET
+2D96: 06 0D                 DEFM	'©'+CR
+2D98: 53 41 56 45 20        DEFM	'SAVE TO CASSETTE'
+2D9D: 54 4F 20 43 41
+2DA2: 53 53 45 54 54
+2DA7: 45
+2DA8: 00                    NOP
+2DA9: 06 0D                 DEFM	'©'+CR
+2DAB: 4C 4F 41 44 20        DEFM	'LOAD FROM CASSETTE'
+2DB0: 46 52 4F 4D 20
+2DB5: 43 41 53 53 45
+2DBA: 54 54 45
+2DBD: 00                    DEFB    00h
+2DBE: 06 0D                 DEFM	'©'+CR
+2DC0: 56 45 52 49 46        DEFM	'VERIFY WITH CASSETTE'
+2DC5: 59 20 57 49 54
+2DCA: 48 20 43 41 53
+2DCF: 53 45 54 54 45
+2DD4: 00                    DEFB    00h
+2DD5: 0D                    DEFB    0Dh
+2DD6: 46 4F 55 4E 44        DEFM	'FOUND : '
+2DDB: 20 3A 20
+2DDE: 00                    DEFB    00h
+2DDF: 0D                    DEFB    0Dh
+2DE0: 20 53 4B 49 50        DEFM	' SKIP : '
+2DE5: 20 3A 20
+2DE8: 00                    DEFB    00h
+2DE9: 16 01                 DEFB    16h,01h		CURSOR 01h,16h
+2DEB: 4B 2F 43 2C 31        DEFM	'K/C,1200 TAPE'
+2DF0: 32 30 30 20 54
+2DF5: 41 50 45
+2DF8: 0D                    DEFB	0Dh
+2DF9: 0D                    DEFB	0Dh
+2DFA: 46 49 4C 45 4E        DEFM	'FILENAME ? '
+2DFF: 41 4D 45 20 3F
+2E04: 20
+2E05: 00                    NOP
+2E06: 54 41 50 45 20        DEFM	'TAPE READ ERROR'
+2E0B: 52 45 41 44 20
+2E10: 45 52 52 4F 52
+2E15: 00                    NOP
+                      RM2E16:
+2E16: 21 EC 2E              LD      HL,2EECh	'LOAD STANDARD DATA'
+2E19: CD 17 2F              CALL    RM2F17	"00"になるまで１文字プリントを繰り返す
+2E1C: F3                    DI
+2E1D: 16 04                 LD      D,04h
+                      RM2E1F:
+2E1F: CD 57 04              CALL    RM0457
+2E22: 3E FF                 LD      A,FFh
+2E24: 32 2E 32              LD      (RM322E),A
+                      RM2E27:
+2E27: 06 0A                 LD      B,0Ah
+                      RM2E29:
+2E29: CD 85 2E              CALL    RM2E85
+2E2C: FE AA                 CP      AAh
+2E2E: 20 F7                 JR      NZ,RM2E27
+2E30: 10 F7                 DJNZ    RM2E29
+2E32: 21 41 11              LD      HL,1141h	音楽ファイル名格納アドレス
+                      RM2E35:
+2E35: 06 10                 LD      B,10h
+                      RM2E37:
+2E37: CD 85 2E              CALL    RM2E85
+2E3A: 77                    LD      (HL),A
+2E3B: 23                    INC     HL
+2E3C: 10 F9                 DJNZ    RM2E37
+2E3E: 36 00                 LD      (HL),00h
+2E40: 21 D5 2D              LD      HL,2DD5h	'FOUND : '
+                      RM2E43:
+2E43: CD 17 2F              CALL    RM2F17	"00"になるまで１文字プリントを繰り返す
+2E46: 21 41 11              LD      HL,1141h	音楽ファイル名格納アドレス
+2E49: CD 17 2F              CALL    RM2F17	"00"になるまで１文字プリントを繰り返す
+2E4C: AF                    XOR     A		'A=0
+2E4D: 32 2E 32              LD      (RM322E),A
+2E50: 21 7D 33              LD      HL,337Dh	データ先頭アドレス
+                      RM2E53:
+2E53: CD 85 2E              CALL    RM2E85
+                      RM2E56:
+2E56: FE 3A                 CP      3Ah
+2E58: C2 53 2E              JP      NZ,RM2E53
+2E5B: CD 85 2E              CALL    RM2E85
+                      RM2E5E:
+2E5E: 47                    LD      B,A
+2E5F: 4F                    LD      C,A
+2E60: A7                    AND     A
+2E61: 28 11                 JR      Z,RM2E74
+                      RM2E63:
+2E63: CD 85 2E              CALL    RM2E85
+2E66: 77                    LD      (HL),A
+2E67: 81                    ADD     C
+2E68: 4F                    LD      C,A
+2E69: 23                    INC     HL
+2E6A: 10 F7                 DJNZ    RM2E63
+2E6C: CD 85 2E              CALL    RM2E85
+2E6F: 81                    ADD     C
+2E70: 20 0C                 JR      NZ,RM2E7E
+2E72: 18 DF                 JR      RM2E53
+                      RM2E74:
+2E74: CD CE 04              CALL    RM04CE
+2E77: FB                    EI
+2E78: CD 7E 1B              CALL    RM1B7E
+2E7B: C3 1A 13              JP      RM131A		HOT START
+                      RM2E7E:
+2E7E: CD CE 04              CALL    RM04CE
+2E81: FB                    EI
+2E82: C3 E7 2C              JP      RM2CE7	'TAPE READ ERROR'
+                      RM2E85:
+2E85: D9                    EXX
+2E86: 0E 03                 LD      C,03h
+                      RM2E88:
+2E88: CD B8 2E              CALL    RM2EB8
+2E8B: CB 6A                 BIT     5,D
+2E8D: 20 F9                 JR      NZ,RM2E88
+2E8F: 1E 7F                 LD      E,7Fh
+                      RM2E91:
+2E91: CD B8 2E              CALL    RM2EB8
+2E94: 37                    SCF
+2E95: CB 6A                 BIT     5,D
+2E97: 20 01                 JR      NZ,RM2E9A
+2E99: 3F                    CCF
+                      RM2E9A:
+2E9A: CB 1B                 RR      E
+2E9C: 38 F3                 JR      C,RM2E91
+2E9E: E2 AB 2E              JP      PO,RM2EAB
+2EA1: CD B8 2E              CALL    RM2EB8
+2EA4: CB 6A                 BIT     5,D
+2EA6: 28 0D                 JR      Z,RM2EB5
+2EA8: 7B                    LD      A,E
+2EA9: D9                    EXX
+2EAA: C9                    RET
+                      RM2EAB:
+2EAB: CD B8 2E              CALL    RM2EB8
+2EAE: CB 6A                 BIT     5,D
+2EB0: 20 03                 JR      NZ,RM2EB5
+2EB2: 7B                    LD      A,E
+2EB3: D9                    EXX
+2EB4: C9                    RET
+                      RM2EB5:
+2EB5: 7B                    LD      A,E
+2EB6: D9                    EXX
+2EB7: C9                    RET
+                      RM2EB8:
+2EB8: CD CB 2E              CALL    RM2ECB
+2EBB: 57                    LD      D,A
+                      RM2EBC:
+2EBC: CD CB 2E              CALL    RM2ECB
+2EBF: BA                    CP      D
+2EC0: 20 06                 JR      NZ,RM2EC8
+2EC2: 0D                    DEC     C
+2EC3: 20 F7                 JR      NZ,RM2EBC
+2EC5: 0E 03                 LD      C,03h
+2EC7: C9                    RET
+                      RM2EC8:
+2EC8: 0E 02                 LD      C,02h
+2ECA: C9                    RET
+                      RM2ECB:
+2ECB: DB E1                 !IN      A,(E1h)
+2ECD: E6 40                 AND     40h
+2ECF: 47                    LD      B,A
+                      RM2ED0:
+2ED0: DB E1                 !IN      A,(E1h)
+2ED2: CB 7F                 BIT     7,A
+2ED4: 28 A8                 JR      Z,RM2E7E
+2ED6: E6 40                 AND     40h
+2ED8: B8                    CP      B
+2ED9: 28 F5                 JR      Z,RM2ED0
+2EDB: 06 4F                 LD      B,4Fh
+                      RM2EDD:
+2EDD: 10 FE                 DJNZ    RM2EDD
+2EDF: 47                    LD      B,A
+2EE0: DB E1                 !IN      A,(E1h)
+2EE2: E6 40                 AND     40h
+2EE4: B8                    CP      B
+2EE5: 28 03                 JR      Z,RM2EEA
+2EE7: 3E FF                 LD      A,FFh
+2EE9: C9                    RET
+                      RM2EEA:
+2EEA: AF                    XOR     A			'A=0
+2EEB: C9                    RET
+2EEC: 06 0D 0D              DEFB    06h,0Dh,0Dh
+2EEF: 4C 4F 41 44 20        DEFM	'LOAD STANDARD DATA'
+2EF4: 53 54 41 4E 44
+2EF9: 41 52 44 20 44
+2EFE: 41 54 41
+2F01: 0D                    DEFB	0Dh
+2F02: 00                    NOP
+                      RM2F03:行をクリアして1行PRINT
+2F03: 23                    INC     HL
+2F04: 56                    LD      D,(HL)
+2F05: E5                    PUSH    HL
+2F06: 1E 00                 LD      E,00h
+2F08: 21 6E 25              LD      HL,256Eh	PRINT SPACEx39
+2F0B: CD 14 2F              CALL    RM2F14		CURSOR D,E:PRINT HL(00まで)
+2F0E: E1                    POP     HL
+2F0F: 2B                    DEC     HL
+                      RM2F10:CURSOR D,E
+2F10: 5E                    LD      E,(HL)	Y座標の設定
+2F11: 23                    INC     HL
+2F12: 56                    LD      D,(HL)	X座標の設定
+2F13: 23                    INC     HL
+                      RM2F14:
+2F14: CD 8E 31              CALL    RM318E	CURSOR D,E
+                      RM2F17:	00hになるまで１文字プリント繰返し
+2F17: 7E                    LD      A,(HL)
+2F18: 23                    INC     HL
+2F19: A7                    AND     A		'CP0
+2F1A: C8                    RET     Z
+2F1B: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+2F1E: C3 17 2F              JP      RM2F17
+                      RM2F21:
+2F21: 3E 20                 LD      A,20h
+2F23: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+2F26: 3E 20                 LD      A,20h
+2F28: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+2F2B: 3E 20                 LD      A,20h
+2F2D: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+                      RM2F30:
+2F30: 3E 20                 LD      A,20h
+2F32: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+                      RM2F35:
+2F35: 3E 20                 LD      A,20h
+2F37: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+                      RM2F3A:
+2F3A: 3E 20                 LD      A,20h
+2F3C: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+                      RM2F3F:
+2F3F: 3E 20                 LD      A,20h
+2F41: C3 88 31              JP      RM3188	'1文字プリント。カーソル・コントロール可
+2F44: 3E 0D                 LD      A,0Dh
+2F46: C3 88 31              JP      RM3188	'1文字プリント。カーソル・コントロール可
+                      RM2F49:
+2F49: C5                    PUSH    BC
+2F4A: D5                    PUSH    DE
+2F4B: 06 00                 LD      B,00h
+2F4D: 11 F0 D8              LD      DE,D8F0h
+2F50: CD 76 2F              CALL    RM2F76
+2F53: C3 5A 2F              JP      RM2F5A
+                      RM2F56:
+2F56: C5                    PUSH    BC
+2F57: D5                    PUSH    DE
+2F58: 06 00                 LD      B,00h
+                      RM2F5A:
+2F5A: 11 18 FC              LD      DE,FC18h
+2F5D: CD 76 2F              CALL    RM2F76
+2F60: 11 9C FF              LD      DE,FF9Ch
+2F63: CD 76 2F              CALL    RM2F76
+2F66: 11 F6 FF              LD      DE,FFF6h
+2F69: CD 76 2F              CALL    RM2F76
+2F6C: 11 FF FF              LD      DE,FFFFh
+2F6F: 04                    INC     B
+2F70: CD 76 2F              CALL    RM2F76
+2F73: D1                    POP     DE
+2F74: C1                    POP     BC
+2F75: C9                    RET
+                      RM2F76:
+2F76: 0E 30                 LD      C,30h
+                      RM2F78:
+2F78: E5                    PUSH    HL
+2F79: 19                    ADD     HL,DE
+2F7A: 7C                    LD      A,H
+2F7B: A7                    AND     A
+2F7C: FA 86 2F              JP      M,RM2F86
+2F7F: 33                    INC     SP
+2F80: 33                    INC     SP
+2F81: 04                    INC     B
+2F82: 0C                    INC     C
+2F83: C3 78 2F              JP      RM2F78
+                      RM2F86:
+2F86: E1                    POP     HL
+2F87: 78                    LD      A,B
+2F88: A7                    AND     A
+2F89: CA 3F 2F              JP      Z,RM2F3F
+2F8C: 79                    LD      A,C
+2F8D: C3 88 31              JP      RM3188	'1文字プリント。カーソル・コントロール可
+                      RM2F90:
+2F90: E5                    PUSH    HL
+2F91: C5                    PUSH    BC
+2F92: 06 00                 LD      B,00h
+2F94: 26 64                 LD      H,64h
+2F96: CD A9 2F              CALL    RM2FA9
+                      RM2F99:
+2F99: 26 0A                 LD      H,0Ah
+2F9B: 7D                    LD      A,L
+2F9C: CD A9 2F              CALL    RM2FA9
+2F9F: 26 01                 LD      H,01h
+2FA1: 7D                    LD      A,L
+2FA2: 04                    INC     B
+2FA3: CD A9 2F              CALL    RM2FA9
+2FA6: C1                    POP     BC
+2FA7: E1                    POP     HL
+2FA8: C9                    RET
+                      RM2FA9:
+2FA9: 0E 30                 LD      C,30h
+                      RM2FAB:
+2FAB: 6F                    LD      L,A
+2FAC: 94                    SUB     H
+2FAD: DA B5 2F              JP      C,RM2FB5
+2FB0: 04                    INC     B
+2FB1: 0C                    INC     C
+2FB2: C3 AB 2F              JP      RM2FAB
+                      RM2FB5:
+2FB5: 78                    LD      A,B
+2FB6: A7                    AND     A
+2FB7: CA 3F 2F              JP      Z,RM2F3F
+2FBA: 79                    LD      A,C
+2FBB: C3 88 31              JP      RM3188	'1文字プリント。カーソル・コントロール可
+                      RM2FBE:
+2FBE: 3E 20                 LD      A,20h
+2FC0: 32 08 32              LD      (RM3208),A
+2FC3: 32 09 32              LD      (RM3209),A
+2FC6: 32 0A 32              LD      (RM320A),A
+                      RM2FC9:
+2FC9: CD 3F 31              CALL    RM313F		INPUT
+2FCC: FE 07                 CP      07h
+2FCE: 28 19                 JR      Z,RM2FE9
+2FD0: FE 30                 CP      30h
+2FD2: F8                    RET     M
+2FD3: FE 3A                 CP      3Ah
+2FD5: F0                    RET     P
+2FD6: 47                    LD      B,A
+2FD7: 3A 09 32              LD      A,(RM3209)
+2FDA: 32 08 32              LD      (RM3208),A
+2FDD: 3A 0A 32              LD      A,(RM320A)
+2FE0: 32 09 32              LD      (RM3209),A
+2FE3: 78                    LD      A,B
+2FE4: 32 0A 32              LD      (RM320A),A
+2FE7: 18 11                 JR      RM2FFA
+                      RM2FE9:
+2FE9: 3A 09 32              LD      A,(RM3209)
+2FEC: 32 0A 32              LD      (RM320A),A
+2FEF: 3A 08 32              LD      A,(RM3208)
+2FF2: 32 09 32              LD      (RM3209),A
+2FF5: 3E 20                 LD      A,20h
+2FF7: 32 08 32              LD      (RM3208),A
+                      RM2FFA:
+2FFA: CD A7 31              CALL    RM31A7
+2FFD: 3A 08 32              LD      A,(RM3208)
+3000: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+3003: 3A 09 32              LD      A,(RM3209)
+3006: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+3009: 3A 0A 32              LD      A,(RM320A)
+300C: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+300F: CD AC 31              CALL    RM31AC
+3012: C3 C9 2F              JP      RM2FC9
+                      RM3015:
+3015: FE 20                 CP      20h
+3017: C8                    RET     Z
+3018: D6 30                 SUB     30h
+301A: C5                    PUSH    BC
+301B: E1                    POP     HL
+301C: 09                    ADD     HL,BC
+301D: 29                    ADD     HL,HL
+301E: 09                    ADD     HL,BC
+301F: 29                    ADD     HL,HL
+3020: 4F                    LD      C,A
+3021: 06 00                 LD      B,00h
+3023: 09                    ADD     HL,BC
+3024: 44                    LD      B,H
+3025: 4D                    LD      C,L
+3026: C9                    RET
+                      RM3027:
+3027: 3A 0A 32              LD      A,(RM320A)
+302A: FE 20                 CP      20h
+302C: CA A4 1F              JP      Z,RM1FA4
+302F: 01 00 00              LD      BC,0000h
+3032: 3A 08 32              LD      A,(RM3208)
+3035: CD 15 30              CALL    RM3015
+3038: 3A 09 32              LD      A,(RM3209)
+303B: CD 15 30              CALL    RM3015
+303E: 3A 0A 32              LD      A,(RM320A)
+3041: CD 15 30              CALL    RM3015
+3044: 2A E0 32              LD      HL,(RM32E0)		データの現在アドレス
+3047: 7E                    LD      A,(HL)
+3048: FE FD                 CP      FDh				FDh,0Ch,06h(measure end)？
+304A: 38 06                 JR      C,RM3052
+304C: CD 14 0F              CALL    RM0F14		ベルを鳴らす(ラ：440Hz)
+304F: C3 A4 1F              JP      RM1FA4
+                      RM3052:
+3052: 3A 29 32              LD      A,(RM3229)
+3055: FE 00                 CP      00h
+3057: 20 1A                 JR      NZ,RM3073
+3059: 3A DB 32              LD      A,(RM32DB)
+305C: FE 09                 CP      09h
+305E: 28 21                 JR      Z,RM3081
+3060: 78                    LD      A,B
+3061: A7                    AND     A
+3062: C2 6B 30              JP      NZ,RM306B
+3065: 79                    LD      A,C
+3066: FE 71                 CP      71h
+3068: DA 8C 30              JP      C,RM308C
+                      RM306B:
+306B: CD 14 0F              CALL    RM0F14		ベルを鳴らす(ラ：440Hz)
+306E: 3E 70                 LD      A,70h
+3070: C3 8C 30              JP      RM308C
+                      RM3073:
+3073: 78                    LD      A,B
+3074: A7                    AND     A
+3075: 79                    LD      A,C
+3076: CA 8C 30              JP      Z,RM308C
+3079: CD 14 0F              CALL    RM0F14		ベルを鳴らす(ラ：440Hz)
+307C: 3E FF                 LD      A,FFh
+307E: C3 8C 30              JP      RM308C
+                      RM3081:
+3081: 78                    LD      A,B
+3082: A7                    AND     A
+3083: 79                    LD      A,C
+3084: CA 8C 30              JP      Z,RM308C
+3087: CD 14 0F              CALL    RM0F14		ベルを鳴らす(ラ：440Hz)
+308A: 3E F0                 LD      A,F0h
+                      RM308C:
+308C: 47                    LD      B,A
+308D: 3A 29 32              LD      A,(RM3229)
+3090: 85                    ADD     L
+3091: 6F                    LD      L,A
+3092: 30 01                 JR      NC,RM3095
+3094: 24                    INC     H
+                      RM3095:
+3095: 70                    LD      (HL),B
+3096: C3 A4 1F              JP      RM1FA4
+                      RM3099:
+3099: CD 8E 31              CALL    RM318E		CURSOR E,D
+309C: 3E 20                 LD      A,20h
+309E: 32 08 32              LD      (RM3208),A
+30A1: 32 09 32              LD      (RM3209),A
+30A4: 32 0A 32              LD      (RM320A),A
+30A7: 32 0B 32              LD      (RM320B),A
+                      RM30AA:
+30AA: CD 3F 31              CALL    RM313F		INPUT
+30AD: FE 07                 CP      07h
+30AF: CA D1 30              JP      Z,RM30D1
+30B2: FE 30                 CP      30h
+30B4: F8                    RET     M
+30B5: FE 3A                 CP      3Ah
+30B7: F0                    RET     P
+30B8: 47                    LD      B,A
+30B9: 3A 09 32              LD      A,(RM3209)
+30BC: 32 08 32              LD      (RM3208),A
+30BF: 3A 0A 32              LD      A,(RM320A)
+30C2: 32 09 32              LD      (RM3209),A
+30C5: 3A 0B 32              LD      A,(RM320B)
+30C8: 32 0A 32              LD      (RM320A),A
+30CB: 78                    LD      A,B
+30CC: 32 0B 32              LD      (RM320B),A
+30CF: 18 17                 JR      RM30E8
+                      RM30D1:
+30D1: 3A 0A 32              LD      A,(RM320A)
+30D4: 32 0B 32              LD      (RM320B),A
+30D7: 3A 09 32              LD      A,(RM3209)
+30DA: 32 0A 32              LD      (RM320A),A
+30DD: 3A 08 32              LD      A,(RM3208)
+30E0: 32 09 32              LD      (RM3209),A
+30E3: 3E 20                 LD      A,20h
+30E5: 32 08 32              LD      (RM3208),A
+                      RM30E8:
+30E8: CD A2 31              CALL    RM31A2
+30EB: 3A 08 32              LD      A,(RM3208)
+30EE: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+30F1: 3A 09 32              LD      A,(RM3209)
+30F4: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+30F7: 3A 0A 32              LD      A,(RM320A)
+30FA: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+30FD: 3A 0B 32              LD      A,(RM320B)
+3100: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+3103: CD AC 31              CALL    RM31AC
+3106: C3 AA 30              JP      RM30AA
+                      RM3109:
+3109: 3A 0B 32              LD      A,(RM320B)
+310C: FE 20                 CP      20h
+310E: 20 0E                 JR      NZ,RM311E
+3110: CD A2 31              CALL    RM31A2
+3113: 5E                    LD      E,(HL)
+3114: 23                    INC     HL
+3115: 56                    LD      D,(HL)
+3116: EB                    EX      DE,HL
+3117: CD 56 2F              CALL    RM2F56
+311A: CD AC 31              CALL    RM31AC
+311D: C9                    RET
+                      RM311E:
+311E: E5                    PUSH    HL
+311F: 01 00 00              LD      BC,0000h
+3122: 3A 08 32              LD      A,(RM3208)
+3125: CD 15 30              CALL    RM3015
+3128: 3A 09 32              LD      A,(RM3209)
+312B: CD 15 30              CALL    RM3015
+312E: 3A 0A 32              LD      A,(RM320A)
+3131: CD 15 30              CALL    RM3015
+3134: 3A 0B 32              LD      A,(RM320B)
+3137: CD 15 30              CALL    RM3015
+313A: E1                    POP     HL
+313B: 71                    LD      (HL),C
+313C: 23                    INC     HL
+313D: 70                    LD      (HL),B
+313E: C9                    RET
+                      RM313F:
+313F: E5                    PUSH    HL
+3140: C5                    PUSH    BC
+3141: D5                    PUSH    DE
+3142: CD 29 0C              CALL    RM0C29	?PONT(カーソル位置をHLに)
+3145: 22 03 00              LD      (RM0003),HL	カーソル点滅のVRAM座標？
+3148: CD 3E 0C              CALL    RM0C3E	DSPR（CHARACTER$と同じ、HLの座標の値をAに格納）
+314B: 32 0D 00              LD      (RM000D),A	FLASH:Aを格納
+314E: 32 0E 00              LD      (RM000E),A	FLSDAT:Aを格納
+                      RM3151:
+3151: 2A 03 00              LD      HL,(RM0003)	カーソルの座標をHLに
+3154: 3A 0E 00              LD      A,(RM000E)	FLSDAT:をAに
+3157: FE 1F                 CP      1Fh			▦か？
+3159: 20 0B                 JR      NZ,RM3166	
+315B: 3A 0D 00              LD      A,(RM000D)	AにFLSDATを格納
+                      RM315E:
+315E: 32 0E 00              LD      (RM000E),A	FLSDAT:にAのキャラを表示
+3161: CD 50 0C              CALL    RM0C50	DSPW:(HLの座標にAのASCIIコードを格納)
+3164: 18 04                 JR      RM316A
+                      RM3166:
+3166: 3E 1F                 LD      A,1Fh	Aに▦のアスキーコード格納
+3168: 18 F4                 JR      RM315E
+                      RM316A:
+316A: 06 40                 LD      B,40h
+                      RM316C:
+316C: C5                    PUSH    BC
+316D: CD 0F 09              CALL    RM090F	'KEYKEY キー入力
+3170: FE 1E                 CP      1Eh
+3172: C1                    POP     BC
+3173: 20 04                 JR      NZ,RM3179
+3175: 10 F5                 DJNZ    RM316C
+3177: 18 D8                 JR      RM3151
+                      RM3179:
+3179: F5                    PUSH    AF
+317A: 2A 03 00              LD      HL,(RM0003)
+317D: 3A 0D 00              LD      A,(RM000D)
+3180: CD 50 0C              CALL    RM0C50
+3183: F1                    POP     AF
+3184: D1                    POP     DE
+3185: C1                    POP     BC
+3186: E1                    POP     HL
+3187: C9                    RET
+                      RM3188:	'1文字プリント。カーソル・コントロール可
+3188: F5                    PUSH    AF
+3189: CD C6 08              CALL    RM08C6	'1文字プリント。カーソル・コントロール可
+318C: F1                    POP     AF
+318D: C9                    RET
+                      RM318E:		CURSOR E,D
+318E: ED 53 D1 11           LD      (RM11D1),DE
+3192: C9                    RET
+                      RM3193:"HOME"に移動
+3193: 3E 05                 LD      A,05h	"HOME"
+3195: C3 88 31              JP      RM3188	'1文字プリント。カーソル・コントロール可
+                      RM3198:画面クリア
+3198: 3E 06                 LD      A,06h	"©"
+319A: C3 88 31              JP      RM3188	'1文字プリント。カーソル・コントロール可
+319D: 3E 04                 LD      A,04h	"←"
+319F: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+                      RM31A2:
+31A2: 3E 04                 LD      A,04h	"←"
+31A4: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+                      RM31A7:
+31A7: 3E 04                 LD      A,04h	"←"
+31A9: CD 88 31              CALL    RM3188	'1文字プリント。カーソル・コントロール可
+                      RM31AC:
+31AC: 3E 04                 LD      A,04h	"←"
+31AE: C3 88 31              JP      RM3188	'1文字プリント。カーソル・コントロール可
+                      RM31B1:
+31B1: DB E8                 !IN      A,(E8h)	'キーストローブ6の設定
+31B3: E6 F0                 AND     F0h
+31B5: F6 06                 OR      06h
+31B7: D3 E8                 !OUT     (E8h),A
+                      RM31B9:
+31B9: DB EA                 !IN      A,(EAh)	'Qを押していればRM31F6（QUIT）へ
+31BB: FE FD                 CP      FDh
+31BD: 28 37                 JR      Z,RM31F6
+31BF: DB E8                 !IN      A,(E8h)	'キーストローブ4の設定
+31C1: E6 F0                 AND     F0h
+31C3: F6 04                 OR      04h
+31C5: D3 E8                 !OUT     (E8h),A
+31C7: DB EA                 !IN      A,(EAh)	'Eを押していればRM31FE(EDIT CH)へ
+31C9: FE DF                 CP      DFh
+31CB: 28 31                 JR      Z,RM31FE
+31CD: DB 9A                 !IN      A,(9Ah)	'CMU-800の入力タイミングが0xxxxxxxbの間はRM31B9へ
+31CF: E6 80                 AND     80h
+31D1: 28 E6                 JR      Z,RM31B9
+                      RM31D3:
+31D3: DB E8                 !IN      A,(E8h)	'キーストローブ6の設定
+31D5: E6 F0                 AND     F0h
+31D7: F6 06                 OR      06h
+31D9: D3 E8                 !OUT     (E8h),A
+31DB: DB EA                 !IN      A,(EAh)	'Qを押していればRM31F6（QUIT）へ
+31DD: FE FD                 CP      FDh
+31DF: 28 15                 JR      Z,RM31F6
+31E1: DB E8                 !IN      A,(E8h)	'キーストローブ4の設定
+31E3: E6 F0                 AND     F0h
+31E5: F6 04                 OR      04h
+31E7: D3 E8                 !OUT     (E8h),A	'Eを押していればRM31FE(EDIT CH)へ
+31E9: DB EA                 !IN      A,(EAh)
+31EB: FE DF                 CP      DFh
+31ED: 28 0F                 JR      Z,RM31FE
+31EF: DB 9A                 !IN      A,(9Ah)	'CMU-800の入力タイミングが1xxxxxxxbの間はキー入力LOOP
+31F1: E6 80                 AND     80h
+                      RM31F3:
+31F3: C8                    RET     Z
+31F4: 18 DD                 JR      RM31D3
+                      RM31F6:
+31F6: 33                    INC     SP
+31F7: 33                    INC     SP
+31F8: CD 3F 31              CALL    RM313F		INPUT
+31FB: C3 D5 27              JP      RM27D5
+                      RM31FE:
+31FE: 33                    INC     SP
+31FF: 33                    INC     SP
+3200: 33                    INC     SP
+3201: 33                    INC     SP
+3202: CD D5 27              CALL    RM27D5
+3205: C3 C8 1A              JP      RM1AC8
+                      RM3208:
+3208: 00                    NOP
+                      RM3209:
+3209: FF                    RST     38h
+                      RM320A:
+320A: 00                    NOP
+                      RM320B:
+320B: FF                    RST     38h
+320C: 00                    NOP
+320D: FF                    RST     38h
+320E: 00                    NOP
+320F: FF                    RST     38h
+3210: 00                    NOP
+3211: FF                    RST     38h
+3212: 00                    NOP
+3213: FF                    RST     38h
+3214: 00                    NOP
+3215: FF                    RST     38h
+3216: 00                    NOP
+3217: FF                    RST     38h
+3218: 00                    NOP
+3219: FF                    RST     38h
+                      RM321A:
+321A: 00                    NOP
+321B: FF                    RST     38h
+                      RM321C:
+321C: 00                    NOP
+321D: FF                    RST     38h
+                      RM321E:
+321E: 00                    NOP
+321F: FF                    RST     38h
+                      RM3220:
+3220: 00 FF                 DEFB    xxH,yyH
+                      RM3222:
+3222: 00 FF                 DEFB    xxH,yyH
+                      RM3224:
+3224: 00                    NOP
+                      RM3225:
+3225: FF                    RST     38h
+                      RM3226:
+3226: 00                    NOP
+                      RM3227:
+3227: 00                    NOP
+                      RM3228:Y座標を格納
+3228: 00                    NOP
+                      RM3229:
+3229: 00                    NOP
+                      RM322A:
+322A: 00                    NOP
+                      RM322B:X座標を格納
+322B: FF                    RST     38h
+                      RM322C:
+322C: 00                    NOP
+                      RM322D:
+322D: 00                    NOP
+                      RM322E: 	LDFLG
+　　　　　　　　　　　　　　LOAD時：0格納, STANDARD DATA LOAD時:FF格納
+322E: 00                    DEFB    xx
+                      RM322F:		FREE STEPS?
+322F: 2B 44                 DEFB    xx,yy
+                      RM3231:		TOTALメモリ?
+3231: FE FF                 DEFB    xx,yy
+                      RM3233:		フリーステップ格納アドレス
+3233: 21 44                 DEFB    xx,yy
+                      RM3235:		使用ステップ格納アドレス
+3235: 00 00                 DEFB    xx,yy
+                      RM3237:
+3237: 00                    DEFB    00h
+                      RM3238:
+3238: 00                    DEFB    00h
+                      RM3239:	00h=PLAY/FFh=LOOP PLAY
+3239: FF                    DEFB    xxh
+                      RM323A:
+323A: 00                    NOP
+                      RM323B:CH1の発音周波数（下位、上位）
+323B: 01 00
+                      RM323D:ポート98hへ書き込むデータ(CH1)
+                bit0-5	CV-OUT データ (外部端子に出力される、内蔵音源に影響しない)
+				bit6	TUNE-GATE (1 だと CHORD の音が出なくなるのかもしれない・・未確認)
+				bit7	GATE-DATA (0 で発音、1 で消音)
+323D: 80                    DEFB    80h
+323E: 01 FF
+3240: 80 33                 DEFB    33 80	1CH先頭アドレス格納
+3242: 01 FF 00              LD      BC,00FFh
+3245: FF                    RST     38h
+3246: 00                    NOP
+3247: FF                    RST     38h
+3248: 00                    NOP
+3249: FF                    RST     38h
+324A: 00                    NOP
+324B: FF                    RST     38h
+                      RM324C:CH2の発音周波数（下位、上位）
+324C: 01 00              LD      BC,8000h
+                      RM324E:ポート98hへ書き込むデータ(CH2)
+324E: 80
+324F: 01 00
+3251: 83 33                 DEFB    33 83	2CH先頭アドレス格納
+3253: 01 00 FF              LD      BC,FF00h
+3256: 00                    NOP
+3257: FF                    RST     38h
+3258: 00                    NOP
+3259: FF                    RST     38h
+325A: 00                    NOP
+325B: FF                    RST     38h
+325C: 00                    NOP
+325D: 01 00 80              LD      BC,8000h
+3260: 01 FF
+3262: 86 33                 DEFB    33 86	3CH先頭アドレス格納
+3264: 01 FF 00              LD      BC,00FFh
+3267: FF                    RST     38h
+3268: 00                    NOP
+3269: FF                    RST     38h
+326A: 00                    NOP
+326B: FF                    RST     38h
+326C: 00                    NOP
+326D: FF                    RST     38h
+326E: 01 00 80              LD      BC,8000h
+3271: 01 00
+3273: 89 33                 DEFB    33 89	4CH先頭アドレス格納
+3275: 01 00 FF              LD      BC,FF00h
+3278: 00                    NOP
+3279: FF                    RST     38h
+327A: 00                    NOP
+327B: FF                    RST     38h
+327C: 00                    NOP
+327D: FF                    RST     38h
+327E: 00                    NOP
+327F: 01 00 80              LD      BC,8000h
+3282: 01 00
+3284: 8C 33                 DEFB    33 8C	5CH先頭アドレス格納
+3286: 01 00 FF              LD      BC,FF00h
+3289: 00                    NOP
+328A: FF                    RST     38h
+328B: 00                    NOP
+328C: FF                    RST     38h
+328D: 00                    NOP
+328E: FF                    RST     38h
+328F: 00                    NOP
+3290: 01 00 80              LD      BC,8000h
+3293: 01 FF
+3295: 8F 33                 DEFB    33 8F	6CH先頭アドレス格納
+3297: 01 FF 00              LD      BC,00FFh
+329A: FF                    RST     38h
+329B: 00                    NOP
+329C: FF                    RST     38h
+329D: 00                    NOP
+329E: FF                    RST     38h
+329F: 00                    NOP
+32A0: FF                    RST     38h
+32A1: 01 00 80              LD      BC,8000h
+32A4: 01 00
+32A6: 92 33                 DEFB    33 92	7CH先頭アドレス格納
+32A8: 01 00 FF              LD      BC,FF00h
+32AB: 00                    NOP
+32AC: FF                    RST     38h
+32AD: 00                    NOP
+32AE: FF                    RST     38h
+32AF: 00                    NOP
+32B0: FF                    RST     38h
+32B1: 00                    NOP
+32B2: 01 00 80              LD      BC,8000h
+32B5: 01 FF
+32B7: 95 33                 DEFB    33 95	8CH先頭アドレス格納
+32B9: 01 FF 00              LD      BC,00FFh
+32BC: FF                    RST     38h
+32BD: 00                    NOP
+32BE: FF                    RST     38h
+32BF: 00                    NOP
+32C0: FF                    RST     38h
+32C1: 00                    NOP
+32C2: FF                    RST     38h
+                      RM32C3:
+32C3: 95                    SUB     L
+32C4: 33                    INC     SP
+32C5: 80                    ADD     B
+32C6: 01 00                 DEFB    01h,00h
+32C8: 7A 33                 DEFB    7Ah,33h		スタックポインタ初期値
+32CA: 01 00 FF              LD      BC,FF00h
+32CD: 00                    NOP
+32CE: FF                    RST     38h
+32CF: 00                    NOP
+32D0: FF                    RST     38h
+32D1: 00                    NOP
+32D2: FF                    RST     38h
+32D3: 00                    NOP
+32D4: FF                    RST     38h
+32D5: 00                    NOP
+32D6: FF                    RST     38h
+32D7: 00                    NOP
+32D8: FF                    RST     38h
+32D9: 00                    NOP
+32DA: FF                    RST     38h
+                      RM32DB:
+32DB: 01 01 00              LD      BC,0001h
+                      RM32DE:
+32DE: 01 00                 LD      BC,8000h
+                      RM32E0:'データの現在アドレス
+32E0: 80 33                 DEFM    xx,xx
+32E2: 7D 33                 DEFB    33 7D	0CH先頭アドレス格納
+                      RM32E4:
+32E4: 80 33                 DEFB    33 80	1CH先頭アドレス格納
+32E6: 83 33                 DEFB    33 83	2CH先頭アドレス格納
+32E8: 86 33                 DEFB    33 86	3CH先頭アドレス格納
+32EA: 89 33                 DEFB    33 89	4CH先頭アドレス格納
+32EC: 8C 33                 DEFB    33 8C	5CH先頭アドレス格納
+32EE: 8F 33                 DEFB    33 8F	6CH先頭アドレス格納
+32F0: 92 33                 DEFB    33 92	7CH先頭アドレス格納
+32F2: 95 33                 DEFB    33 95	8CH先頭アドレス格納
+                      RM32F4:
+32F4: 98 33                 DEFB    33 98	9CH先頭アドレス格納
+                      RM32F6:
+32F6: 9B 33                 DEFB    33 98	バックアップ判定フラグアドレス格納                      RM32F8:
+32F8: FF                    RST     38h
+32F9: 00                    NOP
+32FA: FF                    RST     38h
+32FB: 00                    NOP
+32FC: FF                    RST     38h
+32FD: 00                    NOP
+32FE: FF                    RST     38h
+32FF: 00                    NOP
+3300: 00                    NOP
+3301: FF                    RST     38h
+3302: 00                    NOP
+3303: FF                    RST     38h
+3304: 00                    NOP
+3305: FF                    RST     38h
+3306: 00                    NOP
+3307: FF                    RST     38h
+3308: 00                    NOP
+3309: FF                    RST     38h
+330A: 00                    NOP
+330B: FF                    RST     38h
+330C: 00                    NOP
+330D: FF                    RST     38h
+330E: 00                    NOP
+330F: FF                    RST     38h
+3310: 00                    NOP
+3311: FF                    RST     38h
+3312: 00                    NOP
+3313: FF                    RST     38h
+3314: 00                    NOP
+3315: FF                    RST     38h
+3316: 00                    NOP
+3317: FF                    RST     38h
+3318: 00                    NOP
+3319: FF                    RST     38h
+331A: 00                    NOP
+331B: FF                    RST     38h
+331C: 00                    NOP
+331D: FF                    RST     38h
+331E: 00                    NOP
+331F: FF                    RST     38h
+3320: 00                    NOP
+3321: FF                    RST     38h
+3322: 00                    NOP
+3323: FF                    RST     38h
+3324: 00                    NOP
+3325: FF                    RST     38h
+3326: 00                    NOP
+3327: FF                    RST     38h
+3328: 00                    NOP
+3329: FF                    RST     38h
+332A: 00                    NOP
+332B: FF                    RST     38h
+332C: 00                    NOP
+332D: FF                    RST     38h
+332E: 00                    NOP
+332F: FF                    RST     38h
+3330: 00                    NOP
+3331: FF                    RST     38h
+3332: 00                    NOP
+3333: FF                    RST     38h
+3334: 00                    NOP
+3335: FF                    RST     38h
+3336: 00                    NOP
+3337: FF                    RST     38h
+3338: 00                    NOP
+3339: FF                    RST     38h
+333A: 00                    NOP
+333B: FF                    RST     38h
+333C: 00                    NOP
+333D: FF                    RST     38h
+333E: 00                    NOP
+333F: FF                    RST     38h
+3340: 00                    NOP
+3341: FF                    RST     38h
+3342: 00                    NOP
+3343: FF                    RST     38h
+3344: 00                    NOP
+3345: FF                    RST     38h
+3346: 00                    NOP
+3347: FF                    RST     38h
+3348: 00                    NOP
+3349: FF                    RST     38h
+334A: 00                    NOP
+334B: FF                    RST     38h
+334C: 00                    NOP
+334D: FF                    RST     38h
+334E: 00                    NOP
+334F: FF                    RST     38h
+3350: 00                    NOP
+3351: FF                    RST     38h
+3352: 00                    NOP
+3353: FF                    RST     38h
+3354: 00                    NOP
+3355: FF                    RST     38h
+3356: 04                    INC     B
+3357: 01 FF FF              LD      BC,FFFFh
+335A: 25                    DEC     H
+335B: 01 01 0F              LD      BC,0F01h
+335E: 00                    NOP
+335F: 03                    INC     BC
+3360: 20 00                 JR      NZ,RM3362
+                      RM3362:
+3362: 4A                    LD      C,D
+3363: 08                    EX      AF,AF'
+3364: 53                    LD      D,E
+3365: 14                    INC     D
+3366: 00                    NOP
+3367: 03                    INC     BC
+3368: 20 00                 JR      NZ,RM336A
+                      RM336A:
+336A: 02                    LD      (BC),A
+336B: 0F                    RRCA
+336C: 50                    LD      D,B
+336D: 00                    NOP
+336E: 70                    LD      (HL),B
+336F: 31 0A 35              LD      SP,350Ah
+3372: 00                    NOP
+3373: 03                    INC     BC
+3374: 0A                    LD      A,(BC)
+3375: 00                    NOP
+3376: 54                    LD      D,H
+3377: 14                    INC     D
+3378: 34                    INC     (HL)
+3379: 13                    INC     DE
+337A: FD FF                 RST     38h
+337C: 00                    NOP
+
+
