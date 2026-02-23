@@ -1,0 +1,854 @@
+;***  CMU-800 PLAYER Ver 0.3B  ***
+;***  EQU PACK  ***
+;***  82/07/25  ***
+;***  by  ANOM  ***
+LETNL EQU 0A2EH
+NL    EQU 0A29H
+PRNTS EQU 08C4H  ;PRINT " "
+PRNT  EQU 08C6H  ;PRINT CHAR$(A)
+MSG   EQU 0889H  ;PRINT (DE)→0DH
+MSGX  EQU 087BH  ;PRINT (DE)→0DH
+BELL  EQU 0F14H
+MELDY EQU 0F3FH  ;MUSIC (DE)→0DH or "*"
+SOUT  EQU 0F22H  ;BC←long HL←high
+CHR80 EQU 0C7CH  ;CONSOLEC80
+CHR40 EQU 0CEEH  ;CONSOLEC40
+SCRSET EQU 08D3H
+GETL  EQU 06A4H  ;INPUT (DE)
+GETKEY EQU 0832H  ;GET A
+KBSET EQU 0571H
+PRNTT EQU 086CH  ;PRINT TAB
+PRTHL EQU 05D8H  ;HLreg PRINT
+PRTHX EQU 05DDH  ;Areg PRINT
+ASC   EQU 05F3H  ;Areg+4 → ASC!
+HEX   EQU 05FDH  ;ASC → Areg+4
+HLHEX EQU 0614H  ;(DE)→HL
+AHEX  EQU 0623H  ;(DE)→A
+XTEMP EQU 0E56H  ;A→TEMPO
+TIMST EQU 0E5EH  ;DE→Sec.
+TIMRD EQU 0EA9H  ;DE←Sec.
+BRKEY EQU 0562H  ;Break→Z=1
+POINT EQU 0C29H  ;HL←CURSOR
+SAME  EQU 063AH  ;(DE)=(HL)?
+SAVE1 EQU 0251H
+SAVE2 EQU 0282H
+MLOAD EQU 01CBH  ;モニタのLコマンド
+LOAD1 EQU 028EH
+LOAD2 EQU 02B2H
+VELY  EQU 02BEH
+CMTON EQU 0457H  ;D(BIT 0or1)=1 THEN Write
+CMTOFF EQU 04CEH
+SCROL EQU 0AA7H  ;SCROOL UP!
+NLMSGX EQU 05B6H
+NLPHLS EQU 05BCH
+KIN   EQU 058CH  ;A←Head 05CC=Break jump
+MON   EQU 00B1H
+;
+;������������������������
+; CMU-800 PLAYER Ver 0.33B
+; Created 2025 by MKOMA
+;������������������������
+;
+;Start 2024/09/15 END     /  /
+;
+  START EQU 012A0H
+  ORG START
+        CALL    MEM2GRAM
+        LD      SP,337AH
+        LD      HL,337AH        ;PLAYER専用
+        LD      (HL),0FDH       ;PLAYER専用ֳ
+        CALL    CHR40
+        CALL    CMUSET0
+        CALL    DTanalysis
+HSTART: LD      HL,DSPDT
+        CALL    CSRPRT
+        LD      A,0FFH   ;(未確認だが残す)
+HSTART2:AND     A       ;(未確認だが残す)
+        JR      Z,HSTART
+        CALL    INPUT
+        CP      50H     ;P:PLAY
+        CALL    Z,PLAY
+        CP      4CH     ;L:LOAD
+        CALL    Z,MLOAD
+        CP      4DH     ;M:MON
+        CALL    Z,MON
+        JP      HSTART2 ;LOOP
+DSPDT:  DEFB    00H,00H ;CURSOR0,0
+        DEFB    06H
+        DB    '*** CMU-800 PLAYER Ver 0.33B ***'
+
+        DEFB    0DH
+        DEFB    0DH
+        DB    'P:PLAY'
+
+        DEFB    0DH
+        DB    'Q:STOP'
+
+        DEFB    0DH
+        DB    'L:LOAD'
+
+        DEFB    0DH
+        DB    'M:MON'
+
+        DEFB    0DH
+        DEFB    0DH
+        DB    '?'
+        DEFB    00H
+DTanalysis: LD      DE,337DH
+        LD      HL,32E2H
+        LD      B,0BH
+        JR      RM1B94
+RM1B8B: LD      A,(DE)
+        INC     DE
+        INC     DE
+        INC     DE
+        CP      0FEH
+        JP      C,RM1B8B
+RM1B94: LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        DJNZ    RM1B8B
+        LD      HL,(3231H)
+        LD      DE,(32F6H)
+        AND     A
+        SBC     HL,DE
+        CALL    RM1EDA
+        LD      (3233H),BC
+        LD      HL,(322FH)
+        AND     A
+        SBC     HL,BC
+        LD      BC,000AH
+        SBC     HL,BC
+        LD      (3235H),HL
+        CALL    SETSTRT
+        LD      A,01H
+        LD      (32DBH),A
+        LD      HL,0001H
+        LD      (32DCH),HL
+        LD      (32DEH),HL
+        LD      A,00H
+        LD      (3229H),A
+        LD      HL,(32E4H)
+        LD      (32E0H),HL
+        XOR     A
+        LD      (322DH),A
+        LD      (3226H),A
+        LD      (3227H),A
+        RET
+RM1EDA: LD      DE,0003H
+        LD      BC,0FFFFH
+RM1EE0: INC     BC
+        SBC     HL,DE
+        JP      NC,RM1EE0
+        RET
+PLAY:   CALL    SETSTRT
+        CALL    S8235N1
+LOOP1:  LD      B,09H
+        LD      HL,323EH        ;(ֳ要確認)
+LOOP2:  DEC     (HL)
+        CALL    Z,RM2886        ;(ֳ要確認)
+        INC     HL
+        DEC     (HL)
+        CALL    Z,RM297D        ;(ֳ要確認)
+        LD      DE,0010H
+        ADD     HL,DE
+        DJNZ    LOOP2
+        LD      A,(3237H)
+        CP      0FFH
+        JR      NZ,POINT1
+        LD      A,(3238H)
+        AND     A
+        JP      NZ,ENDPLAY
+POINT1: CALL    TIMING
+CALL BOCHI
+        CALL    ONKAI
+        JP      LOOP1
+ENDPLAY:CALL    S8235N0
+        XOR     A
+        RET
+RM2886: INC     HL
+        INC     HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+RM288B: DEC     HL
+        DEC     HL
+        DEC     HL
+RM288E: LD      A,(DE)
+        CP      0FDH
+        JR      C,RM28A4
+        LD      (323AH),A
+        JP      NZ,RM29C8
+        LD      A,B
+        DEC     A
+        JP      Z,RM2986
+        INC     DE
+RM289F: INC     DE
+        INC     DE
+        JP      RM288E
+RM28A4: CP      0FBH
+        JP      Z,RM2926
+        CP      0FCH
+        JP      Z,RM2959
+        DEC     HL
+        AND     7FH
+        LD      (HL),A
+        INC     DE
+        LD      A,(DE)
+        AND     A
+        JR      NZ,RM28BA
+        INC     HL
+        JR      RM289F
+RM28BA: LD      A,B
+        DEC     A
+        JR      Z,RM2915
+        LD      C,(HL)
+        LD      A,(3226H)
+        AND     A
+        JP      M,RM28D1
+        ADD     A,C
+RM28C7: LD      C,A
+        CP      71H
+        JR      C,RM28DB
+        SUB     0CH
+        JP      RM28C7
+RM28D1: ADD     A,C
+RM28D2: LD      C,A
+        JP      P,RM28DB
+        ADD     A,0CH
+        JP      RM28D2
+RM28DB: PUSH    DE
+        PUSH    HL
+        LD      HL,ONKAIDATA		;★
+        LD      D,00H
+        LD      E,C
+        ADD     HL,DE
+        ADD     HL,DE
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        POP     HL
+        DEC     HL
+        LD      (HL),D
+        DEC     HL
+        LD      (HL),E
+        INC     HL
+        INC     HL
+        POP     DE
+        LD      A,(3227H)
+        LD      C,A
+        LD      A,(3226H)
+        ADD     A,C
+        LD      C,(HL)
+        JP      M,RM2907
+        ADD     A,C
+RM28FD: LD      C,A
+        CP      40H
+        JR      C,RM2914
+        SUB     0CH
+        JP      RM28FD
+RM2907: ADD     A,C
+        JP      P,RM28FD
+RM290B: LD      C,A
+        JP      P,RM2914
+        ADD     A,0CH
+        JP      RM290B
+RM2914: LD      (HL),C
+RM2915: INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        INC     DE
+        LD      A,(DE)
+        INC     A
+        LD      (HL),A
+        INC     DE
+        INC     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        DEC     HL
+        DEC     HL
+        DEC     HL
+        RET
+RM2926: PUSH    HL
+        PUSH    DE
+        INC     DE
+        LD      A,(DE)
+        LD      DE,0004H
+        ADD     HL,DE
+        LD      E,(HL)
+        DEC     E
+        JR      Z,RM2950
+        INC     E
+        PUSH    HL
+        AND     A
+        JP      Z,RM294C
+        LD      D,00H
+        ADD     HL,DE
+        DEC     HL
+        INC     (HL)
+        CP      (HL)
+        JP      Z,RM294C
+        POP     DE
+        POP     DE
+        DEC     HL
+        LD      D,(HL)
+        DEC     HL
+        LD      E,(HL)
+        LD      A,(DE)
+        POP     HL
+        JP      RM2972
+RM294C: POP     HL
+        DEC     (HL)
+        DEC     (HL)
+        DEC     (HL)
+RM2950: POP     DE
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      A,(DE)
+        POP     HL
+        JP      RM2972
+RM2959: PUSH    HL
+        INC     DE
+        INC     DE
+        INC     DE
+        PUSH    DE
+        LD      DE,0004H
+        ADD     HL,DE
+        LD      E,(HL)
+        LD      D,00H
+        INC     (HL)
+        INC     (HL)
+        INC     (HL)
+        ADD     HL,DE
+        POP     DE
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        LD      (HL),00H
+        LD      A,(DE)
+        POP     HL
+RM2972: INC     HL
+        INC     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        DEC     HL
+        DEC     HL
+        DEC     HL
+        JP      RM288E
+RM297D: DEC     HL
+        DEC     HL
+        LD      A,(HL)
+        OR      80H
+        LD      (HL),A
+        INC     HL
+        INC     HL
+        RET
+RM2986: DEC     HL
+        DEC     HL
+        LD      D,(HL)
+        DEC     HL
+        LD      E,(HL)
+        INC     DE
+        INC     DE
+        INC     DE
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     HL
+        INC     HL
+        PUSH    HL
+        LD      A,(DE)
+        CP      0FEH
+        JP      Z,RM29BC
+        LD      B,A
+        LD      HL,337DH
+        LD      DE,0033H
+        AND     A
+        SBC     HL,DE
+RM29A4: ADD     HL,DE
+        DJNZ    RM29A4
+        LD      B,01H
+        EX      DE,HL
+        LD      HL,(32E4H)
+        AND     A
+        SBC     HL,DE
+        JP      C,RM29BC
+        POP     HL
+        INC     HL
+        INC     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        JP      RM288B
+RM29BC: POP     HL
+        DEC     DE
+        DEC     DE
+        DEC     DE
+        DEC     HL
+        DEC     HL
+        LD      (HL),D
+        DEC     HL
+        LD      (HL),E
+        INC     HL
+        INC     HL
+        INC     HL
+RM29C8: XOR     A
+        SCF
+        PUSH    BC
+RM29CB: RLA
+        DJNZ    RM29CB
+        JR      NC,RM29D5
+        CPL
+        LD      (3238H),A
+        CPL
+RM29D5: LD      B,A
+        LD      A,(3237H)
+        OR      B
+        LD      (3237H),A
+        POP     BC
+        RET
+SETSTRT:        XOR     A
+        LD      (3237H),A
+        LD      (3238H),A
+        LD      B,09H
+        LD      HL,3232H
+        LD      DE,32E4H
+RM29EE: PUSH    DE
+        LD      DE,0009H
+        ADD     HL,DE
+        POP     DE
+        LD      (HL),01H
+        INC     HL
+        LD      (HL),00H
+        INC     HL
+        LD      (HL),80H
+        INC     HL
+        LD      (HL),01H
+        INC     HL
+        INC     HL
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        INC     DE
+        LD      A,(DE)
+        LD      (HL),A
+        INC     HL
+        INC     DE
+        LD      (HL),01H
+        INC     HL
+        DJNZ    RM29EE
+        LD      HL,(32F4H)
+        DEC     HL
+        DEC     HL
+        DEC     HL
+        LD      (32C3H),HL
+        LD      HL,337AH
+        LD      (32C8H),HL
+        RET
+ONKAI:  PUSH    HL
+        PUSH    BC
+        PUSH    DE
+        LD      B,04H
+RM2A23: PUSH    BC
+        LD      IX,323BH
+        LD      HL,CHPORT		;★
+        LD      DE,0011H
+        LD      B,01H
+RM2A30: LD      A,(IX+02H)
+        OUT     (98H),A
+        LD      A,B
+        OUT     (9AH),A
+        DEC     A
+        OUT     (9AH),A
+        LD      C,(HL)
+        LD      A,(IX+00H)
+        OUT     (C),A
+        LD      A,(IX+01H)
+        OUT     (C),A
+        ADD     IX,DE
+        INC     HL
+        LD      A,B
+        OUT     (9AH),A
+        INC     B
+        INC     B
+        CP      0FH
+        JP      NZ,RM2A30
+        LD      A,(IX+02H)
+        AND     A
+        JP      P,RM2A5C
+        LD      A,7FH
+RM2A5C: RLA
+        OUT     (99H),A
+        POP     BC
+        DJNZ    RM2A23
+        POP     DE
+        POP     BC
+        POP     HL
+        RET
+CHPORT: DEFB    90H
+        DEFB    91H
+        DEFB    92H
+        DEFB    94H
+        DEFB    95H
+        DEFB    96H
+        SBC     A,H
+        SBC     A,H
+ONKAIDATA: DEFB    41H,97H ;C0
+        DEFB    0BEH,8EH
+        DEFB    0BBH,86H
+        DEFB    2EH,7FH
+        DEFB    0BH,78H
+        DEFB    4EH,71H
+        DEFB    0EDH,6AH
+        DEFB    0ECH,64H
+        DEFB    41H,5FH
+        DEFB    0E8H,59H
+        DEFB    0D9H,54H
+        DEFB    15H,50H
+        DEFB    95H,4BH ;C1
+        DEFB    54H,47H
+        DEFB    53H,43H
+        DEFB    8DH,3FH
+        DEFB    0FCH,3BH
+        DEFB    9EH,38H
+        DEFB    6EH,35H
+        DEFB    6EH,32H
+        DEFB    99H,2FH
+        DEFB    0EDH,2CH
+        DEFB    66H,2AH
+        DEFB    05H,28H
+        DEFB    0C5H,25H ;C2
+        DEFB    0A5H,23H
+        DEFB    0A5H,21H
+        DEFB    0C3H,1FH
+        DEFB    0FBH,1DH
+        DEFB    4CH,1CH
+        DEFB    0B4H,1AH
+        DEFB    34H,19H
+        DEFB    0CAH,17H
+        DEFB    74H,16H
+        DEFB    31H,15H
+        DEFB    01H,14H
+        DEFB    0E1H,12H ;C3
+        DEFB    0D1H,11H
+        DEFB    0D1H,10H
+        DEFB    0E1H,0FH
+        DEFB    0FDH,0EH
+        DEFB    25H,0EH
+        DEFB    59H,0DH
+        DEFB    99H,0CH
+        DEFB    0E4H,0BH
+        DEFB    39H,0BH
+        DEFB    98H,0AH
+        DEFB    00H,0AH
+        DEFB    70H,09H ;C4
+        DEFB    0E8H,08H
+        DEFB    68H,08H
+        DEFB    0F0H,07H
+        DEFB    7EH,07H
+        DEFB    12H,07H
+        DEFB    0ACH,06H
+        DEFB    4CH,06H
+        DEFB    0F2H,05H
+        DEFB    9CH,05H
+        DEFB    4CH,05H
+        DEFB    00H,05H
+        DEFB    0B8H,04H ;C5
+        DEFB    74H,04H
+        DEFB    34H,04H
+        DEFB    0F8H,03H
+        DEFB    0BFH,03H
+        DEFB    89H,03H
+        DEFB    56H,03H
+        DEFB    26H,03H
+        DEFB    0F9H,02H
+        DEFB    0CEH,02H
+        DEFB    0A6H,02H
+        DEFB    80H,02H
+        DEFB    5CH,02H ;C6
+        DEFB    3AH,02H
+        DEFB    1AH,02H
+        DEFB    0FCH,01H
+        DEFB    0DFH,01H
+        DEFB    0C4H,01H
+        DEFB    0ABH,01H
+        DEFB    93H,01H
+        DEFB    7CH,01H
+        DEFB    67H,01H
+        DEFB    53H,01H
+        DEFB    40H,01H
+        DEFB    2EH,01H ;C7
+        DEFB    1DH,01H
+        DEFB    0DH,01H
+        DEFB    0FEH,00H
+        DEFB    0F0H,00H
+        DEFB    0E2H,00H
+        DEFB    0D5H,00H
+        DEFB    0C9H,00H
+        DEFB    0BEH,00H
+        DEFB    0B3H,00H
+        DEFB    0A9H,00H
+        DEFB    0A0H,00H
+        DEFB    97H,00H ;C8
+        DEFB    8EH,00H
+        DEFB    86H,00H
+        DEFB    7FH,00H
+        DEFB    78H,00H
+        DEFB    71H,00H
+        DEFB    6AH,00H
+        DEFB    64H,00H
+        DEFB    5FH,00H
+        DEFB    59H,00H
+        DEFB    54H,00H
+        DEFB    50H,00H
+        DEFB    4BH,00H ;C9
+        DEFB    47H,00H
+        DEFB    43H,00H
+        DEFB    3FH,00H
+        DEFB    3CH,00H
+CMUSET0:LD      A,88H
+        LD      B,0FFH
+        OUT     (9BH),A
+        LD      A,B
+        OUT     (99H),A
+S8235N0:LD      A,30H
+        OUT     (93H),A
+        LD      A,70H
+        OUT     (93H),A
+        LD      A,0B0H
+        OUT     (93H),A
+        LD      A,30H
+        OUT     (97H),A
+        LD      A,70H
+        OUT     (97H),A
+        LD      A,0B0H
+        OUT     (97H),A
+        LD      HL,323DH
+        LD      B,09H
+        LD      DE,0011H
+RM2C15: LD      (HL),80H
+        ADD     HL,DE
+        DJNZ    RM2C15
+        JP      ONKAI
+S8235N1:        LD      A,36H
+        OUT     (93H),A
+        LD      A,76H
+        OUT     (93H),A
+        LD      A,0B6H
+        OUT     (93H),A
+        LD      A,36H
+        OUT     (97H),A
+        LD      A,76H
+        OUT     (97H),A
+        LD      A,0B6H
+        OUT     (97H),A
+        RET
+CSRPRT: LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+RM2F14: CALL    RM318E
+RM2F17: LD      A,(HL)
+        INC     HL
+        AND     A
+        RET     Z
+        CALL    RM3188
+        JP      RM2F17
+INPUT:  PUSH    HL
+        PUSH    BC
+        PUSH    DE
+        CALL    POINT 
+        LD      (0003H),HL
+        CALL    0C3EH
+        LD      (000DH),A
+        LD      (000EH),A
+RM3151: LD      HL,(0003H)
+        LD      A,(000EH)
+        CP      01FH
+        JR      NZ,RM3166
+        LD      A,(000DH)
+RM315E: LD      (000EH),A
+        CALL    0C50H
+        JR      RM316A
+RM3166: LD      A,01FH
+        JR      RM315E
+RM316A: LD      B,40H
+RM316C: PUSH    BC
+        CALL    090FH
+        CP      01EH
+        POP     BC
+        JR      NZ,RM3179
+        DJNZ    RM316C
+        JR      RM3151
+RM3179: PUSH    AF
+        LD      HL,(0003H)
+        LD      A,(000DH)
+        CALL    0C50H
+        POP     AF
+        POP     DE
+        POP     BC
+        POP     HL
+        RET
+RM3188: PUSH    AF
+        CALL    PRNT
+        POP     AF
+        RET
+RM318E: LD      (11D1H),DE
+        RET
+TIMING: IN      A,(0E8H)
+        AND     0F0H
+        OR      06H
+        OUT     (0E8H),A
+RM31B9: IN      A,(0EAH)
+        CP      0FDH
+        JR      Z,RM31F6
+        IN      A,(9AH)
+        AND     80H
+        JR      Z,RM31B9
+RM31D3: IN      A,(0E8H)
+        AND     0F0H
+        OR      06H
+        OUT     (0E8H),A
+        IN      A,(0EAH)
+        CP      0FDH
+        JR      Z,RM31F6
+        IN      A,(9AH)
+        AND     80H
+RM31F3: RET     Z
+        JR      RM31D3
+RM31F6: INC     SP
+        INC     SP
+        CALL    INPUT
+        JP      ENDPLAY
+BOCHI:  LD      HL,(RM2790)
+RM2711: INC     HL     
+      PUSH    HL
+      LD      HL,(RM2790)
+      INC     HL
+      LD      L,(HL)
+      LD      H,00H
+      INC     HL
+      EX      DE,HL
+      POP     HL
+      LD      (HL),E
+RM271E:      LD      HL,(RM2790)
+      INC     HL
+      LD      L,(HL)
+      LD      H,00H
+      LD      DE,0006H   ;ここをいじるとアニメのスピードが変わる
+RM2728: CALL    RM15E8
+      LD      A,L
+      OR      H
+      JR      Z,RM2731
+      RET           
+RM2731:LD      HL,(RM2790)
+      INC     HL
+      LD      (HL),00H
+      LD      HL,(RM2790)
+      LD      A,(HL)
+RM273B:      CP      01H
+      JR      NZ,RM2745
+      LD      HL,0001H
+      CALL    RM1B57
+RM2745:      LD      HL,(RM2790)
+      LD      A,(HL)
+      CP      02H
+      JR      NZ,RM2753
+      LD      HL,0002H
+      CALL    RM1B57
+RM2753:      LD      HL,(RM2790)
+      LD      A,(HL)
+      CP      03H
+      JR      NZ,RM2761
+      LD      HL,0004H
+      CALL    RM1B57
+RM2761:      LD      HL,(RM2790)
+      LD      A,(HL)
+      CP      04H
+      JR      NZ,RM276F
+      LD      HL,0002H
+      CALL    RM1B57
+RM276F:      LD      HL,(RM2790)
+      PUSH    HL
+      LD      HL,(RM2790)
+      LD      L,(HL)
+      LD      H,00H
+      INC     HL
+      EX      DE,HL
+      POP     HL
+      LD      (HL),E
+RM277D:      LD      HL,(RM2790)
+      LD      A,(HL)
+      CP      05H
+      JR      NZ,RM278A
+      LD      HL,(RM2790)
+      LD      (HL),01H
+RM278A:RET
+RM1B57:       LD      A,L
+       AND     0FH
+       OUT     (0F6H),A
+       RET
+RM15E8:OR      A
+SBC     HL,DE
+LD      HL,0000H
+RET     P
+INC     L
+RET
+RM2790:DEFB 0F3H,17H,00H,02H    ;17F3H参照、ソースが変わるとここの値を変える必要がある。（一度アセンブルしないと修正できない…）
+								;WICSで作成したルーチンなので、適正化したい
+								;00H,01Hを17F3に格納し、そのアドレスを17F1に格納しているが、
+								;変数のアドレスをいちいち書くのはおかしいので整理が必要
+								;この変数はどのGRAMを表示しているか示している。
+
+
+MEM2GRAM:CALL	GRAMON
+        LD      A,01H   ;GRAPHI1
+        OUT     (0F7H),A
+        LD      HL,2000H        ;from
+        LD      DE,0C000H       ;to
+        LD      BC,3FFFH
+        LDIR    
+        LD      A,02H   ;GRAPHI2
+        OUT     (0F7H),A
+        LD      HL,6000H        ;from
+        LD      DE,0C000H       ;to
+        LD      BC,3FFFH
+        LDIR    
+        CALL	GRAMOFF
+
+;GRAMとアドレスが被るデータの移動
+        LD      HL,A000H        ;from
+        LD      DE,06000H       ;to
+        LD      BC,3FFFH
+        LDIR    
+
+		CALL	GRAMON
+        LD      A,03H   ;GRAPHI3
+        OUT     (0F7H),A
+        LD      HL,6000H        ;from
+        LD      DE,0C000H       ;to
+        LD      BC,3FFFH
+        LDIR    
+        CALL	GRAMOFF
+        
+        LD      A,0C9H  ;MEM2GRAMをC9（RET）で上書きして無効化
+        LD      (MEM2GRAM),A
+        RET
+
+GRAMON: IN      A,(0E8H)
+        SET     7,A		;VRAM ON
+        RES     6,A		;グラフィックアクセス
+        OUT     (0E8H),A
+        RET
+GRAMOFF:IN      A,(0E8H)
+        RES     7,A		;VRAM OFF
+        SET     6,A		;キャラクタアクセス
+        OUT     (0E8H),A
+        RET
+
