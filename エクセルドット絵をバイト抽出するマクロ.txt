@@ -1,0 +1,56 @@
+Sub バイト抽出()
+Dim color As Long
+    For i = 1 To 200        'yのループ
+        For j = 1 To 640 Step 8    'xのループ
+            yi = i
+            yo = i + 210
+            
+            For k = 7 To 0 Step -1
+                xi = j + k
+                xo = j + 7 - k
+                
+            cl = Worksheets("0103").Cells(yi, xi).Interior.colorIndex
+            
+    Select Case cl
+    Case Is = 1
+        cl = 0: b = 0: r = 0: g = 0 '黒
+    Case Is = 5
+        cl = 1: b = 1: r = 0: g = 0 '青
+    Case Is = 3
+        cl = 2: b = 0: r = 1: g = 0 '赤
+    Case Is = 7
+        cl = 3: b = 1: r = 1: g = 0 '紫
+    Case Is = 4
+        cl = 4: b = 0: r = 0: g = 1 '緑
+    Case Is = 8
+        cl = 5: b = 1: r = 0: g = 1 '水色
+    Case Is = 6
+        cl = 6: b = 0: r = 1: g = 1 '黄色
+    Case Is = 2
+        cl = 7: b = 1: r = 1: g = 1  '白
+    Case Is = -4142
+        cl = 7: b = 1: r = 1: g = 1  '白
+    End Select
+            
+b_byte_bin = b_byte_bin & b
+r_byte_bin = r_byte_bin & r
+g_byte_bin = g_byte_bin & g
+
+            Next k
+            
+            b_byte_hex = Application.WorksheetFunction.Bin2Hex(b_byte_bin, 2)
+            r_byte_hex = Application.WorksheetFunction.Bin2Hex(r_byte_bin, 2)
+            g_byte_hex = Application.WorksheetFunction.Bin2Hex(g_byte_bin, 2)
+            
+            Worksheets("0103").Cells(yo, (xo + 7) / 8 - 1).Value = b_byte_hex
+            Worksheets("0103").Cells(yo + 210, (xo + 7) / 8 - 1).Value = r_byte_hex
+            Worksheets("0103").Cells(yo + 420, (xo + 7) / 8 - 1).Value = g_byte_hex
+            
+b_byte_bin = ""
+r_byte_bin = ""
+g_byte_bin = ""
+
+            Next j
+    Next i
+End Sub
+
