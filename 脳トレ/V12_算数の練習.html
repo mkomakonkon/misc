@@ -469,7 +469,23 @@ var SONGS = [
       });
     } else s.textContent = mk(t);
     el.appendChild(s);
+    fitProb(el);
   }
+  /* 問題が枠の幅に入らないとき（答えが2けたなど）は、文字を小さくして1行におさめる */
+  function fitProb(el){
+    el.style.fontSize = "";
+    var sp = el.firstChild;
+    if (!sp || !el.offsetParent) return;
+    var cs = getComputedStyle(el), fs = parseFloat(cs.fontSize);
+    var avail = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    sp.style.whiteSpace = "nowrap";
+    var w = sp.offsetWidth;
+    sp.style.whiteSpace = "";
+    if (avail > 0 && w > avail) el.style.fontSize = (fs * avail / w * 0.97) + "px";
+  }
+  function fitAll(){ fitProb($("problem")); fitProb($("problem2")); }
+  window.addEventListener("resize", fitAll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
   function refreshProb(){
     ["problem","problem2"].forEach(function(id){
       var el = $(id); if (el.dataset.raw) setProb(el, el.dataset.raw);
@@ -488,11 +504,11 @@ var SONGS = [
     var m = (c.txt || (c.a + " ÷ " + c.b + " = ?")).match(/^(\S+) ÷ (\S+) = (\S+)$/);
     return m ? m[1] + " = " + m[2] + " × " + m[3] : null;
   }
-  function collapseProblem(){ $("problem2").style.display = "none"; $("probwrap").classList.remove("two"); }
+  function collapseProblem(){ $("problem2").style.display = "none"; $("probwrap").classList.remove("two"); fitProb($("problem")); }
   $("probwrap").addEventListener("click", function(){
     if (locked) return;
     var m = multText(cur); if (!m) return;
-    setProb($("problem2"), m); $("problem2").style.display = ""; $("probwrap").classList.add("two");
+    setProb($("problem2"), m); $("problem2").style.display = ""; $("probwrap").classList.add("two"); fitAll();
   });
   function showHints(){
     $("hintbox").textContent = hintLines.length ? hintLines[0] : "";
