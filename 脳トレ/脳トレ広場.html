@@ -7,26 +7,26 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="color-scheme" content="light">
 <title>脳トレ広場</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@700&display=swap">
 <style>
 :root{--ink:#17202a;--panel:#ffffff;--pri:#14607a;--acc:#f08a24;--ok:#2e7d32;
-  --ui:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;color-scheme:light}
+  --ui:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;color-scheme:light}
 *,*::before,*::after{box-sizing:border-box}
-html{font-size:21px}
-html.fs0{font-size:18px}
-html.fs2{font-size:27px}
+html{font-size:calc(var(--k,1) * clamp(20px,min(3.7vw,3.1vh),40px))}
+html.fs0{--k:.9}
+html.fs2{--k:1.4}
 html,body{margin:0;min-height:100%}
 body{background:linear-gradient(180deg,#d7eefa 0%,#fdf6df 55%,#e6f2c8 100%);background-attachment:fixed;
   color:var(--ink);font-family:var(--ui);font-weight:700;-webkit-tap-highlight-color:transparent;
   touch-action:manipulation;user-select:none;-webkit-user-select:none;overflow-x:hidden;overscroll-behavior:none}
 button{font-family:var(--ui);font-weight:900;cursor:pointer;color:var(--ink)}
 button:focus-visible{outline:4px solid var(--pri);outline-offset:3px}
-.screen{display:none;min-height:100dvh;padding:1rem 1rem 1.5rem;max-width:1000px;margin:0 auto;flex-direction:column;align-items:center;gap:1rem}
+.screen{display:none;min-height:100dvh;padding:.6rem 1rem 1rem;max-width:1000px;margin:0 auto;flex-direction:column;align-items:center;gap:1rem}
 .screen.on{display:flex}
-h1{font-size:3rem;margin:.4rem 0 0;color:#23506b;letter-spacing:.05em;text-align:center}
+h1{font-size:3.2rem;margin:.4rem 0 0;color:#23506b;letter-spacing:.05em;text-align:center}
 h1 span{color:#e8742a}
-.sub{font-size:1.3rem;margin:0;text-align:center}
-.btn{background:var(--panel);border:4px solid var(--pri);border-radius:1.2rem;font-size:1.3rem;padding:.6rem 1.4rem;min-height:3.6rem}
+.sub{font-size:1.5rem;margin:0;text-align:center}
+.btn{background:var(--panel);border:4px solid var(--pri);border-radius:1.2rem;font-size:1.5rem;padding:.6rem 1.4rem;min-height:3.6rem}
 .btn:active{filter:brightness(.93)}
 .go{background:#ffb43c;border-color:#c77a12;box-shadow:0 .3rem 0 #c77a12;font-size:1.7rem;padding:1rem 2rem;border-radius:2rem;width:100%;max-width:720px;line-height:1.3}
 .go small{display:block;font-size:1.05rem;font-weight:700;margin-top:.2rem}
@@ -35,19 +35,19 @@ h1 span{color:#e8742a}
 .ggrid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
 .gbtn{background:var(--panel);border:4px solid var(--pri);border-radius:1.3rem;padding:.8rem .6rem;display:flex;flex-direction:column;align-items:center;gap:.15rem;min-height:9rem}
 .gbtn .gi{font-size:2.8rem;line-height:1}
-.gbtn .gn{font-size:1.35rem}
-.gbtn .gd{font-size:1rem;font-weight:700}
-.gbtn .gl{font-size:1rem;color:var(--pri)}
+.gbtn .gn{font-size:1.6rem}
+.gbtn .gd{font-size:1.2rem;font-weight:700}
+.gbtn .gl{font-size:1.2rem;color:var(--pri)}
 .gbtn:active{filter:brightness(.93)}
 /* play */
 .hud{width:100%;display:flex;align-items:center;gap:.8rem}
-.hud .count{font-size:1.4rem;white-space:nowrap;min-width:4.5rem}
+.hud .count{font-size:1.7rem;white-space:nowrap;min-width:4.5rem}
 .bar{flex:1;height:1rem;background:rgba(23,32,42,.15);border-radius:99px;overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .4s}
-.hud .btn{min-height:3rem;font-size:1.1rem;padding:.3rem 1rem}
-#title{font-size:1.5rem;margin:0}
-#msg{min-height:2.6rem;font-size:1.5rem;text-align:center;margin:0;line-height:1.35}
-#stage{width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+.hud .btn{min-height:3.4rem;font-size:1.3rem;padding:.3rem 1rem}
+#title{display:none}
+#msg{min-height:2.3rem;font-size:1.5rem;text-align:center;margin:0;line-height:1.35}
+#stage{width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem}
 .cgrid{display:grid;gap:12px;justify-content:center}
 .tb{background:#fff;border:4px solid var(--pri);border-radius:50%;padding:0;line-height:1;display:flex;align-items:center;justify-content:center}
 .tb.done{background:#c8e6c9;border-color:var(--ok);color:#1b5e20}
@@ -60,18 +60,19 @@ h1 span{color:#e8742a}
 .ob.miss,.cat.miss,.opt.miss{opacity:.3;pointer-events:none}
 .pad{border:6px solid rgba(0,0,0,.25);border-radius:1.4rem;opacity:.7;transition:opacity .1s,transform .1s}
 .pad.lit{opacity:1;transform:scale(1.07);border-color:#fff;box-shadow:0 0 0 8px #ffe27a}
-.item{background:#fff;border:4px solid #8aa4b3;border-radius:1.5rem;padding:.8rem 2.5rem;text-align:center}
-.item .e{font-size:6.5rem;line-height:1.1}
-.item .w{font-size:2.2rem}
+.item{background:#fff;border:4px solid #8aa4b3;border-radius:1.5rem;padding:.4rem 2.5rem;text-align:center}
+.item .e{font-size:4.8rem;line-height:1.1}
+.item .w{font-size:3rem;letter-spacing:.06em}
 .cats{display:grid;gap:.8rem;width:100%;max-width:720px}
-.cat{border:4px solid #3b4a55;border-radius:1.2rem;font-size:1.9rem;padding:1rem;min-height:5rem}
+.cat{border:4px solid #3b4a55;border-radius:1.2rem;font-size:2.3rem;letter-spacing:.05em;padding:.6rem;min-height:5rem}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;width:100%;max-width:720px}
-.opt{background:#fff;border:4px solid var(--pri);border-radius:1.2rem;font-size:2rem;padding:1rem .4rem;min-height:5.2rem}
-.opt .sw{display:inline-block;width:1.4rem;height:1.4rem;border-radius:50%;margin-right:.5rem;vertical-align:-.15rem;border:2px solid #000}
-.clock{width:min(78vw,52dvh,400px);height:auto}
-.panel{background:#263238;border-radius:1.5rem;padding:.6rem 2.5rem;min-width:min(90vw,520px);text-align:center;display:flex;align-items:center;justify-content:center;min-height:9rem}
-.panel .word{font-size:5.5rem;line-height:1.2;font-weight:900}
-.panel .blk{width:9rem;height:6rem;border-radius:1rem}
+.opt{background:#fff;border:4px solid var(--pri);border-radius:1.2rem;font-size:2.5rem;letter-spacing:.06em;padding:.6rem .3rem;min-height:5.2rem}
+.opt.nw{white-space:nowrap;font-size:2.2rem;letter-spacing:.02em}
+.opt .sw{display:inline-block;width:2.2rem;height:2.2rem;border-radius:50%;margin-right:.5rem;vertical-align:-.15rem;border:2px solid #000}
+.clock{width:min(70vw,33dvh,340px);height:auto}
+.panel{background:#263238;border-radius:1.5rem;padding:.3rem 2rem;min-width:min(90vw,520px);text-align:center;display:flex;align-items:center;justify-content:center;min-height:7.5rem}
+.panel .word{font-size:5.5rem;line-height:1.2;font-weight:700;letter-spacing:.08em}
+.panel .blk{width:10rem;height:5.5rem;border-radius:1rem}
 .cue{font-size:1.9rem;padding:.3rem 1.2rem;border-radius:1rem;background:#fff;border:4px solid var(--ink)}
 .cue.c{background:#ffe0b2;border-color:#e65100}
 .cue.r{background:#bbdefb;border-color:#0d47a1}
@@ -83,8 +84,8 @@ h1 span{color:#e8742a}
 /* result / rest */
 .stars{font-size:5rem;color:#f0a020;text-shadow:0 .2rem 0 #b8760b;margin:0;letter-spacing:.1em}
 .stars .off{opacity:.25}
-.big{font-size:1.7rem;margin:0;text-align:center;line-height:1.5}
-.mid{font-size:1.4rem;margin:0;text-align:center;line-height:1.5}
+.big{font-size:2rem;margin:0;text-align:center;line-height:1.5}
+.mid{font-size:1.6rem;margin:0;text-align:center;line-height:1.5}
 /* log */
 .lcard{width:100%;background:#fff;border:4px solid #8aa4b3;border-radius:1.2rem;padding:.8rem 1.2rem}
 .lh{font-size:1.2rem;color:var(--pri)}
@@ -379,7 +380,7 @@ var SONGS = [
   function show(id){ ["menu","play","rest","result","log"].forEach(function(s){ $(s).classList.toggle("on", s === id); }); window.scrollTo(0,0);
     document.body.classList.remove("alarm"); wantBgm = id === "play" ? "song" : (id === "rest" ? "rest" : "menu"); applyBgm(); }
   function gridSize(cols, rows, cap){
-    var w = Math.min($("stage").clientWidth || window.innerWidth, 1000), h = Math.max(260, window.innerHeight - 300), gap = 12;
+    var w = Math.min($("stage").clientWidth || window.innerWidth, 1000), h = Math.max(200, window.innerHeight - $("stage").getBoundingClientRect().top - 1.2 * parseFloat(getComputedStyle(document.documentElement).fontSize)), gap = 12;
     return Math.floor(Math.min((w - gap*(cols-1))/cols, (h - gap*(rows-1))/rows, cap || 220));
   }
   function setGrid(g, cols, s){ g.style.gridTemplateColumns = "repeat(" + cols + "," + s + "px)"; g.style.gridAutoRows = s + "px"; }
@@ -514,7 +515,7 @@ var SONGS = [
       var seq = [], i;
       if (!mix){ for (i=1;i<=n;i++) seq.push(String(i)); }
       else { var H = "あいうえおかき"; for (i=0;i<n/2;i++){ seq.push(String(i+1)); seq.push(H.charAt(i)); } }
-      api.msg(mix ? "1 → あ → 2 → い … の順にタッチ" : "1から 順番にタッチ");
+      api.msg(mix ? "1→あ→2→い の順にタッチ" : "1から 順番にタッチ");
       var s = gridSize(cols, rows), g = el("div", "cgrid"); setGrid(g, cols, s);
       var cells = shuffle(range(cols*rows)).slice(0, n), pos = {}, btns = [], nxt = 0;
       cells.forEach(function(c, k){ pos[c] = k; });
@@ -589,7 +590,7 @@ var SONGS = [
       var pool = L <= 2 ? EASY : (L <= 4 ? MID : MID.concat(HARD)), p;
       do { p = pickOne(pool); } while (p === lastp && pool.length > 1); lastp = p;
       var flip = Math.random() < .5, base = flip ? p[1] : p[0], odd = flip ? p[0] : p[1], oi = rnd(0, N-1), s = gridSize(cols, rows), got = false;
-      var st = api.stage; st.innerHTML = ""; api.msg("1つだけ ちがう絵を さがしましょう");
+      var st = api.stage; st.innerHTML = ""; api.msg("1つだけ ちがう絵を さがそう");
       var g = el("div", "cgrid"); setGrid(g, cols, s);
       for (var i=0;i<N;i++){
         (function(i){
@@ -613,7 +614,8 @@ var SONGS = [
   start:function(L, api){
     var len = L + 1, trials = 6, ti = 0, seq = [], user = 0, lock = true;
     var P = [{n:"あか",c:"#e53935",t:"#fff",f:262},{n:"あお",c:"#1e88e5",t:"#fff",f:330},{n:"きいろ",c:"#fdd835",t:"#222",f:392},{n:"みどり",c:"#43a047",t:"#fff",f:523}];
-    var s = gridSize(2, 2, 250), g = el("div", "cgrid"), pads = []; setGrid(g, 2, s);
+    var s = gridSize(2, 2, 250); s = Math.max(120, s - Math.round(2.4 * parseFloat(getComputedStyle(document.documentElement).fontSize)));
+    var g = el("div", "cgrid"), pads = []; setGrid(g, 2, s);
     api.prog(0, trials);
     function light(i){ pads[i].classList.add("lit"); tone(P[i].f, 0, .5, .3); setTimeout(function(){ pads[i].classList.remove("lit"); }, 500); }
     P.forEach(function(p, i){
@@ -662,9 +664,9 @@ var SONGS = [
       do { it = pickOne(CATS[c]); } while (it[1] === last); last = it[1];
       var st = api.stage; st.innerHTML = ""; api.msg("これは どの なかま？");
       var box = el("div", "item"); box.appendChild(el("div", "e", it[0])); box.appendChild(el("div", "w", it[1])); st.appendChild(box); api.tap(box, it[1]); api.say(it[1]);
-      var cg = el("div", "cats"); cg.style.gridTemplateColumns = cats.length === 2 ? "1fr 1fr" : (cats.length === 3 ? "1fr 1fr 1fr" : "1fr 1fr");
+      var cg = el("div", "cats"); cg.style.gridTemplateColumns = "1fr 1fr";
       shuffle(cats).forEach(function(name){
-        var b = el("button", "cat", name); b.style.background = CCOL[cats.indexOf(name)];
+        var b = el("button", "cat", name); b.style.background = CCOL[cats.indexOf(name)]; if (cats.length > 2) b.style.fontSize = "2rem";
         b.addEventListener("click", function(){
           if (got) return;
           if (name === c){ got = true; api.ok(); api.cheer(); ti++; api.prog(ti, trials); api.msg("正解です！"); b.style.outline = "6px solid #2e7d32";
@@ -673,6 +675,7 @@ var SONGS = [
         });
         cg.appendChild(b);
       });
+      if (cats.length === 3) cg.lastChild.style.gridColumn = "1 / -1";
       st.appendChild(cg);
     }
     trial();
@@ -705,11 +708,11 @@ var SONGS = [
     function trial(){
       var h, m, t, ms = L === 1 ? [0] : L === 2 ? [0,30] : L === 3 ? [0,15,30,45] : [0,5,10,15,20,25,30,35,40,45,50,55];
       do { h = rnd(1,12); m = pickOne(ms); t = fmt(h, m); } while (t === lastT); lastT = t;
-      var st = api.stage, got = false; st.innerHTML = ""; api.msg("今は 何時でしょう？（短い針＝時、赤い長い針＝分）");
+      var st = api.stage, got = false; st.innerHTML = ""; api.msg("何時何分でしょう？");
       var w = el("div"); w.innerHTML = clockSvg(h, m); st.appendChild(w); api.tap(w, "今は 何時でしょう？");
       var og = el("div", "opts");
       opts(h, m).forEach(function(o){
-        var b = el("button", "opt", o);
+        var b = el("button", "opt nw", o);
         b.addEventListener("click", function(){
           if (got) return;
           if (o === t){ got = true; api.ok(); api.cheer(); ti++; api.prog(ti, trials); api.msg("正解です！"); b.style.background = "#c8e6c9";
