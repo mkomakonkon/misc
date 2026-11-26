@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -67,6 +68,8 @@ h1 span{color:#e8742a}
 .cat{border:4px solid #3b4a55;border-radius:1.2rem;font-size:2.3rem;letter-spacing:.05em;padding:.6rem;min-height:5rem}
 .opts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.8rem;width:100%;max-width:720px}
 .opt{background:#fff;border:4px solid var(--pri);border-radius:1.2rem;font-size:2.5rem;letter-spacing:.06em;padding:.5rem .3rem;min-height:4.8rem}
+.crow{display:flex;align-items:center;justify-content:center;gap:.8rem;width:100%}
+.clabel{flex:1;min-width:0;font-size:1.6rem;line-height:1.4;text-align:center;white-space:pre-line}
 .opt.nw{white-space:nowrap;font-size:min(2.2rem,7vw);letter-spacing:.02em;min-width:0;overflow:hidden}
 .opt .sw{display:inline-block;width:2.2rem;height:2.2rem;border-radius:50%;margin-right:.5rem;vertical-align:-.15rem;border:2px solid #000}
 .clock{width:min(70vw,33dvh,340px);height:auto}
@@ -415,7 +418,7 @@ var SONGS = [
   function startRound(g){
     cur = { g:g, ok:0, ng:0, t0:Date.now(), done:false, timers:[], miss:[] };
     show("play"); $("title").textContent = g.icon + " " + g.name;
-    $("msg").textContent = ""; $("stage").innerHTML = ""; $("prog").style.width = "0";
+    $("msg").textContent = ""; $("msg").style.display = ""; $("stage").innerHTML = ""; $("prog").style.width = "0";
     if (g.id === "seq"){ wantBgm = "off"; applyBgm(); }
     g.start(getLv(g.id), makeApi(cur));
   }
@@ -647,7 +650,7 @@ var SONGS = [
     function play(b){
       b = b || 800; lock = true; user = 0; api.msg("よく見てください");
       seq.forEach(function(p, k){ api.later(function(){ light(p, true); }, b + k*1500); });
-      api.later(function(){ lock = false; api.msg("あなたの番です。同じ順にタッチ"); }, b + seq.length*1500);
+      api.later(function(){ lock = false; api.msg("今の順番で 押してね"); }, b + seq.length*1500);
     }
     function newTrial(first){ seq = []; for (var k=0;k<len;k++) seq.push(rnd(0,3)); play(first === true ? 3800 : 800); }
     newTrial(true);
@@ -704,6 +707,7 @@ var SONGS = [
   GAMES.push({ id:"clock", icon:"🕐", name:"時計を読もう", desc:"何時何分かな？", up:.9, down:.7,
   start:function(L, api){
     var trials = 8, ti = 0, lastT = "";
+    $("msg").style.display = "none";
     api.prog(0, trials);
     function opts(h, m){
       var c = fmt(h, m), cand = [[h%12+1, m], [(h+10)%12+1, m]];
@@ -718,18 +722,21 @@ var SONGS = [
     function trial(){
       var h, m, t, ms = L === 1 ? [0] : L === 2 ? [0,30] : L === 3 ? [0,15,30,45] : [0,5,10,15,20,25,30,35,40,45,50,55];
       do { h = rnd(1,12); m = pickOne(ms); t = fmt(h, m); } while (t === lastT); lastT = t;
-      var st = api.stage, got = false; st.innerHTML = ""; api.msg("何時何分でしょう？");
+      var st = api.stage, got = false; st.innerHTML = ""; api.hear("何時何分でしょう？");
+      var lab = el("div", "clabel", "何時何分\nでしょう？");
+      function say(t){ api.msg(t); lab.textContent = t; }
       var rem = parseFloat(getComputedStyle(document.documentElement).fontSize), top = st.getBoundingClientRect().top;
-      var cs = Math.max(200, Math.min(window.innerHeight - top - 12.6 * rem, st.clientWidth * .96, 560));
-      var w = el("div"); w.innerHTML = clockSvg(h, m); w.firstChild.style.width = cs + "px"; st.appendChild(w); api.tap(w, "今は 何時でしょう？");
+      var cs = Math.max(200, Math.min(window.innerHeight - top - 12.8 * rem, st.clientWidth * .6, 600));
+      var w = el("div"); w.innerHTML = clockSvg(h, m); w.firstChild.style.width = cs + "px"; w.style.flex = "none";
+      var row = el("div", "crow"); row.appendChild(w); row.appendChild(lab); st.appendChild(row); api.tap(row, "何時何分でしょう？");
       var og = el("div", "opts");
       opts(h, m).forEach(function(o){
         var b = el("button", "opt nw", o);
         b.addEventListener("click", function(){
           if (got) return;
-          if (o === t){ got = true; api.ok(); api.cheer(); ti++; api.prog(ti, trials); api.msg("正解です！"); b.style.background = "#c8e6c9";
+          if (o === t){ got = true; api.ok(); api.cheer(); ti++; api.prog(ti, trials); say("正解です！"); b.style.background = "#c8e6c9";
             if (ti >= trials) api.later(api.done, 1000); else api.later(trial, 1000); }
-          else { api.ng("時計は「" + t + "」なのに「" + o + "」と答えた"); api.oops(); b.classList.add("miss"); api.msg("おしい！もう一度"); }
+          else { api.ng("時計は「" + t + "」なのに「" + o + "」と答えた"); api.oops(); b.classList.add("miss"); say("おしい！もう一度"); }
         });
         og.appendChild(b);
       });
@@ -868,3 +875,5 @@ var SONGS = [
 </script>
 </body>
 </html>
+
+</body></html>
