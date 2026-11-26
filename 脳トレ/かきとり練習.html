@@ -1,14 +1,14 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>かきとり練習</title>
-<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@700&display=swap" rel="stylesheet">
 <style>
 /* 1画面1つのこと。大きな文字、大きなボタン、スクロールなし(横向きでも)。高コントラストのため配色は固定 */
 :root{--bg:#fbfaf5;--ink:#111;--line:#333;--blue:#0b4f9c;--soft:#e6eef8;--guide:#c9c9c9;--red:#c62828;
---kyo:"Klee One","Klee","Hiragino Maru Gothic ProN",sans-serif;--ui:"Hiragino Sans","Noto Sans JP",sans-serif;color-scheme:light}
+--kyo:"BIZ UDGothic","Hiragino Sans","Noto Sans JP",sans-serif;--ui:"Hiragino Sans","Noto Sans JP",sans-serif;color-scheme:light}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 body{background:var(--bg);color:var(--ink);font-family:var(--ui);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 *{box-sizing:border-box}
-#app{height:100%;display:flex;flex-direction:column;padding:12px 16px;gap:12px}
+#app{height:100%;display:flex;flex-direction:column;padding:8px;gap:8px}
 button{font:700 clamp(20px,3.6vmin,34px)/1.25 var(--ui);border:3px solid var(--blue);background:#fff;color:var(--blue);border-radius:18px;min-height:64px;padding:8px 12px;cursor:pointer;touch-action:manipulation}
 button:active{background:var(--soft)}
 button:focus-visible{outline:5px solid #f2a900}
@@ -22,18 +22,20 @@ h1{margin:0;font-size:clamp(24px,4.6vmin,44px);text-align:center;flex:1}
 .rows{grid-template-columns:1fr 1fr}
 @media (orientation:landscape){.home{grid-template-columns:repeat(3,1fr)}.rows{grid-template-columns:repeat(4,1fr)}}
 .work{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
-.sheet{position:relative;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font:600 40px/1.3 var(--kyo);white-space:nowrap;overflow:hidden}
-#model{flex:2}
-.paper{flex:3;background:#fff;border:4px solid var(--line);border-radius:8px}
-#trace{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#d4d4d4;pointer-events:none}
+.sheet{position:relative;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 40px/1.2 var(--kyo);white-space:nowrap;overflow:hidden}
+#model{flex:none}
+.paper{flex:1;line-height:1.1;background:#fff;border:4px solid var(--line);border-radius:8px}
+#trace{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c6c6c6;pointer-events:none}
 canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;z-index:1}
 .list{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
-.list button{flex:1;min-height:0;text-align:left;font:600 min(8.4vw,6.2vh)/1.1 var(--kyo);color:var(--ink);padding:0 12px;white-space:nowrap;overflow:hidden}
-.list button::before{content:"●";color:var(--blue);font-size:.45em;vertical-align:middle;margin-right:.7em}
+.list button{flex:1;min-height:0;text-align:left;font:700 min(8.2vw,6.2vh)/1.1 var(--kyo);color:var(--ink);padding:0 12px;white-space:nowrap;overflow:hidden}
+.list button{display:flex;align-items:center}
+.list button span{min-width:0;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.list button::before{content:"●";color:var(--blue);font-size:.45em;flex:none;margin-right:.7em}
 .pager{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;font-size:28px;font-weight:700}
 .pager button{min-height:80px}
 .bar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.bar button{min-height:clamp(72px,11vmin,110px)}
+.bar button{min-height:clamp(72px,8vmin,90px)}
 .opts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .family{display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0;flex:1;font-size:22px}
 .family input{font-size:24px;padding:12px;border:2px solid var(--line);border-radius:10px;width:100%;-webkit-user-select:text;user-select:text;background:#fff;color:var(--ink)}
@@ -83,11 +85,11 @@ const sentences=`無理せず/いこうね
 また/あしたね
 また/会いましょう
 にこにこ/してね
-大好きだよ
-大丈夫だよ
+大好き/だよ
+大丈夫/だよ
 すてきな/日だね
 元気で/いてね
-気を付けて
+気を/付けて
 いつも感謝/しています
 いつも/ありがとう
 会いに/来ました`.split('\n').map(t=>({lines:t.split('/'),y:t.replace('/','')}));
@@ -107,7 +109,7 @@ function menu(title,items,back,cls){
 }
 function home(){
   menu('なにを かきますか',[
-    {label:'ぶんしょう',sub:'ありがとう',go:()=>sentenceMenu(0)},
+    {label:'ぶんしょう',sub:'ありがとう',go:sentenceMenu},
     {label:'ひらがな',sub:'あいう',go:()=>rows('ひらがな',hira)},
     {label:'カタカナ',sub:'アイウ',go:()=>rows('カタカナ',kata)},
     {label:'すうじ',sub:'123',go:()=>practice([nums],0,home)},
@@ -115,20 +117,22 @@ function home(){
     {label:'せってい',sub:'ご家族用',go:settings}
   ],null,'home');
 }
-function rows(name,list){menu(name,list.map((r,n)=>({label:r[0]+' ぎょう',sub:r,say:r[0]+'ぎょう',go:()=>practice(list.map(t=>({lines:[t],y:[...kana(t)].join('、')})),n,()=>rows(name,list))})),home,'rows')}
-function kanjiMenu(){menu('かんじ',Object.entries(kanji).map(([k,v])=>({label:k,sub:v.lines[0].slice(0,3),go:()=>practice([v],0,kanjiMenu)})),home,'home')}
 const PER=7;
-function sentenceMenu(page){
-  const all=[...sentences,...mine.map(m=>({lines:autoLines(m.w),y:m.y}))],pages=Math.ceil(all.length/PER);
-  el(`<div class="top"><button id="back">← もどる</button><h1>ぶんしょう</h1><button id="read">🔊 きく</button></div><div class="list"></div>
-  <div class="pager"><button id="prev">← まえ</button><span>${page+1} / ${pages}</span><button id="more">つぎ →</button></div>`);
+function listMenu(title,all,page){
+  const pages=Math.ceil(all.length/PER);
+  el(`<div class="top"><button id="back">← もどる</button><h1>${title}</h1><button id="read">🔊 きく</button></div><div class="list"></div>
+  <div class="pager"><button id="prev">← まえ</button><span>${pages>1?`${page+1} / ${pages}`:''}</span><button id="more">つぎ →</button></div>`);
   const here=all.slice(page*PER,(page+1)*PER);
-  here.forEach((x,n)=>{const b=document.createElement('button');b.textContent=label(x);b.onclick=()=>practice(all,page*PER+n,i=>sentenceMenu(Math.floor(i/PER)));$('.list').append(b)});
+  here.forEach((x,n)=>{const b=document.createElement('button'),t=document.createElement('span');t.textContent=label(x);b.append(t);b.onclick=()=>practice(all,page*PER+n,i=>listMenu(title,all,Math.floor(i/PER)));$('.list').append(b)});
   for(let n=here.length;n<PER;n++){const d=document.createElement('div');d.style.flex=1;$('.list').append(d)}
   $('#prev').style.visibility=page?'visible':'hidden';$('#more').style.visibility=page<pages-1?'visible':'hidden';
   on('#back',home);on('#read',()=>say(here.map(x=>x.y).join('。')));
-  on('#prev',()=>sentenceMenu(page-1));on('#more',()=>sentenceMenu(page+1));
+  on('#prev',()=>listMenu(title,all,page-1));on('#more',()=>listMenu(title,all,page+1));
 }
+const sentenceMenu=()=>listMenu('ぶんしょう',[...sentences,...mine.map(m=>({lines:autoLines(m.w),y:m.y}))],0);
+/* 5文字の行は2段にして、書く文字を大きくする。一覧では1行 */
+const rows=(name,list)=>listMenu(name,list.map(t=>({lines:t.length>3?[t.slice(0,3),t.slice(3)]:[t],y:[...kana(t)].join('、')})),0);
+const kanjiMenu=()=>listMenu('かんじ',Object.values(kanji),0);
 
 /* 書く画面 */
 let strokes=[],ctx,cv,fs=40,current=null,penSeen=false,active=null;
@@ -157,19 +161,21 @@ function finish(back){
   el(`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px"><h1 style="flex:0">おつかれさまでした</h1><button id="again" class="main">もういちど えらぶ</button><button id="top">さいしょに もどる</button></div>`);
   on('#again',back);on('#top',home);
 }
-/* お手本と書く場所(なぞり)は同じ文字サイズにそろえる */
+/* お手本は上の約4割、書く場所は残り全部を使って文字を大きくする */
 function fit(){
   if(!$('.paper')||!current)return;
   const m=$('#model'),p=$('.paper'),n=current.lines.length,len=Math.max(...current.lines.map(t=>[...t].length));
-  fs=Math.floor(Math.min(p.clientWidth*0.94/Math.max(len,4),m.clientHeight/(n*1.3),p.clientHeight*0.94/(n*1.3)));
-  m.style.fontSize=p.style.fontSize=fs+'px';
+  const mh=Math.floor($('.work').clientHeight*0.37);m.style.height=mh+'px';
+  m.style.fontSize=Math.floor(Math.min(m.clientWidth*0.94/Math.max(len,4),mh/(n*1.22)))+'px';
+  fs=Math.floor(Math.min(p.clientWidth*0.98/len,p.clientHeight*0.97/(n*1.1)));
+  p.style.fontSize=fs+'px';
   const d=window.devicePixelRatio||1;
   cv.width=Math.round(cv.clientWidth*d);cv.height=Math.round(cv.clientHeight*d);ctx.setTransform(d,0,0,d,0,0);redraw();
 }
 /* 線は中央からの距離を文字サイズ単位で保存し、向きを変えてもなぞりとずれないようにする */
 function redraw(){
   const cx=cv.clientWidth/2,cy=cv.clientHeight/2;ctx.clearRect(0,0,cx*2,cy*2);
-  ctx.lineCap=ctx.lineJoin='round';ctx.lineWidth=Math.max(5,fs*0.06);ctx.strokeStyle=ctx.fillStyle='#111';
+  ctx.lineCap=ctx.lineJoin='round';ctx.lineWidth=Math.max(7,fs*0.065);ctx.strokeStyle=ctx.fillStyle='#111';
   for(const s of strokes){
     ctx.beginPath();
     if(s.length===1){ctx.arc(cx+s[0][0]*fs,cy+s[0][1]*fs,ctx.lineWidth/2,0,7);ctx.fill();continue}
