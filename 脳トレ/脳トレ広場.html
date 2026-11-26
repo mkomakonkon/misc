@@ -46,7 +46,7 @@ h1 span{color:#e8742a}
 .bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .4s}
 .hud .btn{min-height:3.4rem;font-size:1.3rem;padding:.3rem 1rem}
 #title{display:none}
-#msg{min-height:2.3rem;font-size:1.5rem;text-align:center;margin:0;line-height:1.35}
+#msg{width:100%;min-height:2.3rem;font-size:1.5rem;text-align:center;margin:0;line-height:1.35}
 #stage{width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem}
 .cgrid{display:grid;gap:12px;justify-content:center}
 .tb{background:#fff;border:4px solid var(--pri);border-radius:50%;padding:0;line-height:1;display:flex;align-items:center;justify-content:center}
@@ -59,15 +59,15 @@ h1 span{color:#e8742a}
 .ob{background:#fff;border:4px solid #8aa4b3;border-radius:1rem;padding:0;line-height:1;display:flex;align-items:center;justify-content:center}
 .ob.miss,.cat.miss,.opt.miss{opacity:.3;pointer-events:none}
 .pad{border:6px solid rgba(0,0,0,.25);border-radius:1.4rem;opacity:.7;transition:opacity .1s,transform .1s}
-.pad.lit{opacity:1;transform:scale(1.07);border-color:#fff;box-shadow:0 0 0 8px #ffe27a}
+.pad.lit{opacity:1;transform:scale(1.12);border-color:#fff;border-width:14px;box-shadow:0 0 0 10px #000,0 0 40px 18px rgba(255,255,255,.95);filter:brightness(1.2);z-index:2;position:relative}
 .item{background:#fff;border:4px solid #8aa4b3;border-radius:1.5rem;padding:.4rem 2.5rem;text-align:center}
 .item .e{font-size:4.8rem;line-height:1.1}
 .item .w{font-size:3rem;letter-spacing:.06em}
 .cats{display:grid;gap:.8rem;width:100%;max-width:720px}
 .cat{border:4px solid #3b4a55;border-radius:1.2rem;font-size:2.3rem;letter-spacing:.05em;padding:.6rem;min-height:5rem}
-.opts{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;width:100%;max-width:720px}
-.opt{background:#fff;border:4px solid var(--pri);border-radius:1.2rem;font-size:2.5rem;letter-spacing:.06em;padding:.6rem .3rem;min-height:5.2rem}
-.opt.nw{white-space:nowrap;font-size:2.2rem;letter-spacing:.02em}
+.opts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.8rem;width:100%;max-width:720px}
+.opt{background:#fff;border:4px solid var(--pri);border-radius:1.2rem;font-size:2.5rem;letter-spacing:.06em;padding:.5rem .3rem;min-height:4.8rem}
+.opt.nw{white-space:nowrap;font-size:min(2.2rem,7vw);letter-spacing:.02em;min-width:0;overflow:hidden}
 .opt .sw{display:inline-block;width:2.2rem;height:2.2rem;border-radius:50%;margin-right:.5rem;vertical-align:-.15rem;border:2px solid #000}
 .clock{width:min(70vw,33dvh,340px);height:auto}
 .panel{background:#263238;border-radius:1.5rem;padding:.3rem 2rem;min-width:min(90vw,520px);text-align:center;display:flex;align-items:center;justify-content:center;min-height:7.5rem}
@@ -78,6 +78,7 @@ h1 span{color:#e8742a}
 .cue.r{background:#bbdefb;border-color:#0d47a1}
 .shake{animation:shake .35s}
 @keyframes shake{25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.cgrid.dim .pad:not(.lit){opacity:.3}
 #flash{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-size:min(60vmin,420px);color:#d6281c;pointer-events:none;text-shadow:0 0 12px #fff;z-index:9}
 #flash.on{display:flex;animation:fl .8s ease-out forwards}
 @keyframes fl{0%{transform:scale(1.4);opacity:0}25%{opacity:.9}100%{transform:scale(1);opacity:0}}
@@ -207,7 +208,7 @@ body.alarm{background:#b9f0b0;animation:alarmbg 1s infinite alternate}@keyframes
     if (!t || !window.speechSynthesis || (!S.voice && !force)) return;
     try {
       if (!queue) speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(String(t).replace(/（[^）]*）/g,"").replace(/→/g,"、").replace(/＝/g,"").replace(/…/g,"").replace(/[「」]/g,""));
+      var u = new SpeechSynthesisUtterance(String(t).replace(/（[^）]*）/g,"").replace(/→/g,"、").replace(/＝/g,"").replace(/…/g,"").replace(/[「」]/g,"").replace(/の番/g,"のばん").replace(/何時何分/g,"なんじ なんぷん").replace(/何時/g,"なんじ").replace(/次の/g,"つぎの"));
       u.lang = "ja-JP"; u.rate = .85; speechSynthesis.speak(u);
     } catch(e){}
   }
@@ -379,8 +380,8 @@ var SONGS = [
 
   function show(id){ ["menu","play","rest","result","log"].forEach(function(s){ $(s).classList.toggle("on", s === id); }); window.scrollTo(0,0);
     document.body.classList.remove("alarm"); wantBgm = id === "play" ? "song" : (id === "rest" ? "rest" : "menu"); applyBgm(); }
-  function gridSize(cols, rows, cap){
-    var w = Math.min($("stage").clientWidth || window.innerWidth, 1000), h = Math.max(200, window.innerHeight - $("stage").getBoundingClientRect().top - 1.2 * parseFloat(getComputedStyle(document.documentElement).fontSize)), gap = 12;
+  function gridSize(cols, rows, cap, reserve){
+    var w = Math.min($("stage").clientWidth || window.innerWidth, 1000), h = Math.max(200, window.innerHeight - $("stage").getBoundingClientRect().top - 1.2 * parseFloat(getComputedStyle(document.documentElement).fontSize) - (reserve || 0)), gap = 12;
     return Math.floor(Math.min((w - gap*(cols-1))/cols, (h - gap*(rows-1))/rows, cap || 220));
   }
   function setGrid(g, cols, s){ g.style.gridTemplateColumns = "repeat(" + cols + "," + s + "px)"; g.style.gridAutoRows = s + "px"; }
@@ -429,7 +430,7 @@ var SONGS = [
     var sec = addLog(r), g = r.g, lv = getLv(g.id), tot = r.ok + r.ng, rate = tot ? r.ok / tot : 1, note;
     if (rate >= g.up && lv < 5){ S.lv[g.id] = lv + 1; note = "とても上手！ 次は すこし むずかしくします"; }
     else if (rate < g.down && lv > 1){ S.lv[g.id] = lv - 1; note = "ゆっくりで大丈夫。次は すこし やさしくします"; }
-    else note = "ちょうどいい むずかしさです";
+    else note = "ほどよい むずかしさです";
     save();
     var n = rate >= .9 ? 3 : rate >= .7 ? 2 : 1, st = "";
     for (var i=0;i<3;i++) st += i < n ? "★" : '<span class="off">★</span>';
@@ -551,7 +552,7 @@ var SONGS = [
   GAMES.push({ id:"pairs", icon:"🃏", name:"同じ絵を さがそう", desc:"神経衰弱（記憶）", up:.6, down:.3,
   start:function(L, api){
     var P = [3,4,6,8,10][L-1], cols = [3,4,4,4,5][L-1], rows = Math.ceil(P*2/cols), peek = [6000,5500,5000,4500,4000][L-1];
-    var em = shuffle(EM).slice(0, P), deck = shuffle(em.concat(em)), s = gridSize(cols, rows);
+    var em = shuffle(EM).slice(0, P), deck = shuffle(em.concat(em)), s = gridSize(cols, rows, 220, 6.2 * parseFloat(getComputedStyle(document.documentElement).fontSize));
     var g = el("div", "cgrid"); setGrid(g, cols, s);
     var first = null, lock = true, matched = 0, cards = [];
     function up(b){ b.classList.add("up"); b.firstChild.textContent = b.dataset.e; }
@@ -574,8 +575,12 @@ var SONGS = [
       cards.push(b); g.appendChild(b);
     });
     api.stage.appendChild(g); api.prog(0, P);
-    cards.forEach(up); api.msg("よく見て、場所を おぼえましょう");
-    api.later(function(){ cards.forEach(down); lock = false; api.msg("同じ絵を 2枚 さがしましょう"); }, peek);
+    cards.forEach(up);
+    var rd = el("button", "btn go", "おぼえたら ここを おしてね");
+    rd.style.whiteSpace = "normal"; rd.style.padding = ".6rem 1rem"; rd.style.fontSize = "1.7rem";
+    api.stage.appendChild(rd);
+    api.msg("絵を よく見て、おぼえたら ボタンを おしてね");
+    rd.addEventListener("click", function(){ rd.remove(); cards.forEach(down); lock = false; api.msg("同じ絵を 2枚 さがしましょう"); });
   }});
 
   /* 3. ちがう絵さがし（注意・視覚探索） */
@@ -614,10 +619,15 @@ var SONGS = [
   start:function(L, api){
     var len = L + 1, trials = 6, ti = 0, seq = [], user = 0, lock = true;
     var P = [{n:"あか",c:"#e53935",t:"#fff",f:262},{n:"あお",c:"#1e88e5",t:"#fff",f:330},{n:"きいろ",c:"#fdd835",t:"#222",f:392},{n:"みどり",c:"#43a047",t:"#fff",f:523}];
-    var s = gridSize(2, 2, 250); s = Math.max(120, s - Math.round(2.4 * parseFloat(getComputedStyle(document.documentElement).fontSize)));
+    var s = gridSize(2, 2, 330); s = Math.max(120, s - Math.round(2.4 * parseFloat(getComputedStyle(document.documentElement).fontSize)));
     var g = el("div", "cgrid"), pads = []; setGrid(g, 2, s);
     api.prog(0, trials);
-    function light(i){ pads[i].classList.add("lit"); tone(P[i].f, 0, .5, .3); setTimeout(function(){ pads[i].classList.remove("lit"); }, 500); }
+    function light(i, demo){
+      var ms = demo ? 900 : 450;
+      g.classList.add("dim"); pads[i].classList.add("lit"); tone(P[i].f, 0, .6, .3);
+      if (demo) speak(P[i].n);
+      setTimeout(function(){ pads[i].classList.remove("lit"); g.classList.remove("dim"); }, ms);
+    }
     P.forEach(function(p, i){
       var b = el("button", "pad", p.n); b.style.background = p.c; b.style.color = p.t; b.style.fontSize = (s*.22) + "px"; pads.push(b);
       b.addEventListener("click", function(){
@@ -636,8 +646,8 @@ var SONGS = [
     api.stage.appendChild(g); api.stage.appendChild(rb);
     function play(b){
       b = b || 800; lock = true; user = 0; api.msg("よく見てください");
-      seq.forEach(function(p, k){ api.later(function(){ light(p); }, b + k*1000); });
-      api.later(function(){ lock = false; api.msg("あなたの番です。同じ順にタッチ"); }, b + seq.length*1000);
+      seq.forEach(function(p, k){ api.later(function(){ light(p, true); }, b + k*1500); });
+      api.later(function(){ lock = false; api.msg("あなたの番です。同じ順にタッチ"); }, b + seq.length*1500);
     }
     function newTrial(first){ seq = []; for (var k=0;k<len;k++) seq.push(rnd(0,3)); play(first === true ? 3800 : 800); }
     newTrial(true);
@@ -682,7 +692,7 @@ var SONGS = [
   }});
 
   /* 6. 時計よみ（視空間・生活動作） */
-  function fmt(h, m){ return h + "時" + (m === 0 ? "ちょうど" : m + "分"); }
+  function fmt(h, m){ return h + "時" + (m === 0 ? "" : m + "分"); }
   function clockSvg(h, m){
     var ha = (h % 12) * 30 + m * .5, ma = m * 6, i, s = '<svg class="clock" viewBox="0 0 300 300"><circle cx="150" cy="150" r="144" fill="#fff" stroke="#17202a" stroke-width="8"/>';
     for (i=0;i<60;i++){ var a = i*6*Math.PI/180, r1 = i%5 ? 134 : 124; s += '<line x1="'+(150+Math.sin(a)*r1)+'" y1="'+(150-Math.cos(a)*r1)+'" x2="'+(150+Math.sin(a)*138)+'" y2="'+(150-Math.cos(a)*138)+'" stroke="#17202a" stroke-width="'+(i%5?2:5)+'"/>'; }
@@ -709,7 +719,9 @@ var SONGS = [
       var h, m, t, ms = L === 1 ? [0] : L === 2 ? [0,30] : L === 3 ? [0,15,30,45] : [0,5,10,15,20,25,30,35,40,45,50,55];
       do { h = rnd(1,12); m = pickOne(ms); t = fmt(h, m); } while (t === lastT); lastT = t;
       var st = api.stage, got = false; st.innerHTML = ""; api.msg("何時何分でしょう？");
-      var w = el("div"); w.innerHTML = clockSvg(h, m); st.appendChild(w); api.tap(w, "今は 何時でしょう？");
+      var rem = parseFloat(getComputedStyle(document.documentElement).fontSize), top = st.getBoundingClientRect().top;
+      var cs = Math.max(200, Math.min(window.innerHeight - top - 12.6 * rem, st.clientWidth * .96, 560));
+      var w = el("div"); w.innerHTML = clockSvg(h, m); w.firstChild.style.width = cs + "px"; st.appendChild(w); api.tap(w, "今は 何時でしょう？");
       var og = el("div", "opts");
       opts(h, m).forEach(function(o){
         var b = el("button", "opt nw", o);
