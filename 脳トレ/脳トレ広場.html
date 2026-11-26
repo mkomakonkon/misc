@@ -117,7 +117,7 @@ body.alarm{background:#b9f0b0;animation:alarmbg 1s infinite alternate}@keyframes
 <section id="menu" class="screen on">
   <h1>脳トレ<span>広場</span></h1>
   <p class="sub">まちがえても大丈夫。楽しく、ゆっくり。</p>
-  <button class="btn go" id="course">▶ 今日の1時間コース<small>12ステージ・休けい入り（いつでも やめられます）</small></button>
+  <button class="btn go" id="course">▶ 今日の1時間コース<small>1時間・休けい入り（いつでも やめられます）</small></button>
   <p class="sub">すきなゲームを えらぶ</p>
   <div class="ggrid" id="ggrid"></div>
   <div class="row">
@@ -152,6 +152,7 @@ body.alarm{background:#b9f0b0;animation:alarmbg 1s infinite alternate}@keyframes
   <p class="mid" id="resttext"></p>
   <p class="stars" id="restcount" style="font-size:3rem;color:var(--pri);text-shadow:none"></p>
   <button class="btn go" id="restgo" style="width:auto"></button>
+  <button class="btn" id="restmore" style="display:none"></button>
 </section>
 
 <section id="log" class="screen">
@@ -207,11 +208,12 @@ body.alarm{background:#b9f0b0;animation:alarmbg 1s infinite alternate}@keyframes
 
   /* ---------- 声（読み上げ） ---------- */
   var spUnlocked = false;
+  var TV = ["なんじ、なんぷん","ナンジ、ナンプン","なんじ、なんふん","なんじ なんぷん"];
   function speak(t, force, queue){
     if (!t || !window.speechSynthesis || (!S.voice && !force)) return;
     try {
       if (!queue) speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(String(t).replace(/（[^）]*）/g,"").replace(/→/g,"、").replace(/＝/g,"").replace(/…/g,"").replace(/[「」]/g,"").replace(/の番/g,"のばん").replace(/何時何分/g,"なんじ なんぷん").replace(/何時/g,"なんじ").replace(/次の/g,"つぎの"));
+      var u = new SpeechSynthesisUtterance(String(t).replace(/（[^）]*）/g,"").replace(/→/g,"、").replace(/＝/g,"").replace(/…/g,"").replace(/[「」]/g,"").replace(/の番/g,"のばん").replace(/何時何分/g,TV[S.timeSay || 0]).replace(/何時/g,"なんじ").replace(/次の/g,"つぎの"));
       u.lang = "ja-JP"; u.rate = .85; speechSynthesis.speak(u);
     } catch(e){}
   }
@@ -442,8 +444,8 @@ var SONGS = [
     $("rnote").textContent = note;
     if (course){
       var el_min = Math.round((Date.now() - course.start) / 60000);
-      $("rcourse").textContent = "コース " + (course.i + 1) + " / " + ORDER.length + "　（はじめて " + el_min + "分）";
-      $("rnext").textContent = course.i + 1 >= ORDER.length ? "おわり" : "つぎへ ▶";
+      $("rcourse").textContent = "ステージ " + (course.i + 1) + "　（はじめて " + el_min + "分）";
+      $("rnext").textContent = "つぎへ ▶";
     } else { $("rcourse").textContent = ""; $("rnext").textContent = "もう一度"; }
     sDone(); show("result");
     setTimeout(function(){ speak((n === 3 ? "すばらしい！" : "よくできました。") + "せいかい" + r.ok + "回。" + note); }, 900);
@@ -460,14 +462,24 @@ var SONGS = [
   function gameById(id){ for (var i=0;i<GAMES.length;i++) if (GAMES[i].id === id) return GAMES[i]; }
   function nextCourse(){
     if (!course) return;
-    if (course.i >= ORDER.length){ endCourse(); return; }
+    if (!course.asking && Date.now() - course.start >= course.limit){ showAsk(); return; }
     if (course.i > 0 && course.i % 4 === 0 && restFor !== course.i){ restFor = course.i; showRest(); return; }
-    startRound(gameById(ORDER[course.i]));
+    startRound(gameById(ORDER[course.i % ORDER.length]));
+  }
+  function showAsk(){
+    course.asking = true; clearInterval(restTimer);
+    $("resttitle").textContent = "1時間 たちました！ 🎉";
+    $("resttext").textContent = "ここで おわりますか？ もう少し やりますか？";
+    $("restcount").textContent = "";
+    $("restgo").textContent = "もう少し やる ▶"; $("restgo").classList.remove("pulse");
+    $("restmore").textContent = "おわる"; $("restmore").style.display = "";
+    chime(); show("rest");
+    speak("1時間 たちました。ここで おわりますか？ もう少し やりますか？");
   }
   function showRest(){
     $("resttitle").textContent = "ひと休みしましょう ☕";
     $("resttext").textContent = "お茶を飲んで、遠くを見て、目を休めましょう。";
-    $("restgo").textContent = "休けいを おわる ▶"; $("restgo").classList.remove("pulse");
+    $("restgo").textContent = "休けいを おわる ▶"; $("restgo").classList.remove("pulse"); $("restmore").style.display = "none";
     var left = 60; $("restcount").textContent = "あと " + left + " 秒";
     clearInterval(restTimer);
     restTimer = setInterval(function(){
@@ -493,11 +505,12 @@ var SONGS = [
     $("resttext").textContent = "今日のコースを ぜんぶ やりとげました。（" + m + "分）";
     $("restcount").textContent = "";
     $("restgo").textContent = "メニューへ";
-    $("restgo").classList.remove("pulse"); course = null; clearInterval(restTimer); sDone(); show("rest");
+    $("restgo").classList.remove("pulse"); $("restmore").style.display = "none"; course = null; clearInterval(restTimer); sDone(); show("rest");
     setTimeout(function(){ speak("お疲れさまでした。今日のコースを ぜんぶ やりとげました。"); }, 900);
   }
-  $("course").addEventListener("click", function(){ course = { i:0, start:Date.now() }; restFor = -1; nextCourse(); });
-  $("restgo").addEventListener("click", function(){ clearInterval(restTimer); if (course) nextCourse(); else { renderMenu(); show("menu"); } });
+  $("course").addEventListener("click", function(){ course = { i:0, start:Date.now(), limit:60*60000, asking:false }; restFor = -1; nextCourse(); });
+  $("restmore").addEventListener("click", function(){ $("restmore").style.display = "none"; endCourse(); });
+  $("restgo").addEventListener("click", function(){ clearInterval(restTimer); if (course && course.asking){ course.asking = false; course.limit += 15*60000; } if (course) nextCourse(); else { renderMenu(); show("menu"); } });
   $("rnext").addEventListener("click", function(){
     if (course){ course.i++; nextCourse(); }
     else startRound(cur.g);
@@ -647,12 +660,21 @@ var SONGS = [
     var rb = el("button", "btn", "もう一度 見せる");
     rb.addEventListener("click", function(){ if (!lock) play(); });
     api.stage.appendChild(g); api.stage.appendChild(rb);
+    function waitSilent(minMs, cb){
+      var t0 = Date.now();
+      (function poll(){
+        var busy = S.voice && window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending), e = Date.now() - t0;
+        if (e >= minMs && (!busy || e > 12000)) cb(); else api.later(poll, 150);
+      })();
+    }
     function play(b){
       b = b || 800; lock = true; user = 0; api.msg("よく見てください");
-      seq.forEach(function(p, k){ api.later(function(){ light(p, true); }, b + k*1500); });
-      api.later(function(){ lock = false; api.msg("今の順番で 押してね"); }, b + seq.length*1500);
+      waitSilent(b, function(){
+        seq.forEach(function(p, k){ api.later(function(){ light(p, true); }, k*1500); });
+        api.later(function(){ lock = false; api.msg("今の順番で 押してね"); }, seq.length*1500);
+      });
     }
-    function newTrial(first){ seq = []; for (var k=0;k<len;k++) seq.push(rnd(0,3)); play(first === true ? 3800 : 800); }
+    function newTrial(first){ seq = []; for (var k=0;k<len;k++) seq.push(rnd(0,3)); play(first === true ? 1500 : 800); }
     newTrial(true);
   }});
 
@@ -851,6 +873,17 @@ var SONGS = [
       gc.appendChild(r);
     });
     box.appendChild(gc);
+    var vc = lcard("声の読み方（時計の「何時何分」）", "押すと声が出ます。いちばん正しく聞こえる番号を選んでください（選んだ番号が使われます）");
+    vc.lastChild.style.fontSize = ".95rem";
+    var vr = el("div", "row"); vr.style.marginTop = ".5rem";
+    TV.forEach(function(t, k){
+      var b = el("button", "btn", (k + 1) + "　" + t);
+      b.style.fontSize = "1rem"; b.style.minHeight = "2.8rem";
+      if ((S.timeSay || 0) === k) b.style.background = "#c8e6c9";
+      b.addEventListener("click", function(){ S.timeSay = k; save(); speak("何時何分でしょう？", true); renderLog(); });
+      vr.appendChild(b);
+    });
+    vc.appendChild(vr); box.appendChild(vc);
     var mc = lcard("まちがえた内容（新しい順・最新100件）"), cnt = 0;
     for (var i = S.log.length - 1; i >= 0 && cnt < 100; i--){
       var e = S.log[i]; if (!e.miss || !e.miss.length) continue;
